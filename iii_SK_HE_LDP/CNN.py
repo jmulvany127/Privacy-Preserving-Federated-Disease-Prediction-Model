@@ -48,28 +48,26 @@ class CNN:
         )
         self.model = model
 
-    def compute_average_gradient_norm(self, x_batch, y_batch):
+    def compute_gradient_norm_stats(self, x_batch, y_batch):
         """
-        Computes the average gradient norm over a single batch.
-        This uses the current model and its loss function.
+        Computes both the average and standard deviation of gradient norms for a given batch.
         """
-        # Convert inputs to tensors
         x_batch = tf.convert_to_tensor(x_batch, dtype=tf.float32)
-        # Assuming y_batch contains integer labels; adjust dtype if needed
         y_batch = tf.convert_to_tensor(y_batch, dtype=tf.int32)
         
         with tf.GradientTape() as tape:
             y_pred = self.model(x_batch, training=True)
-            # Compute loss; include regularization losses if any.
             loss = self.model.compiled_loss(y_batch, y_pred, regularization_losses=self.model.losses)
-        # Get gradients for all trainable variables.
+        
         gradients = tape.gradient(loss, self.model.trainable_variables)
-        # Compute norm for each gradient (skip any None values).
+        # Compute norm for each gradient (skip None values)
         grad_norms = [tf.norm(g) for g in gradients if g is not None]
-        # Compute the average norm across all variables.
-        avg_grad_norm = tf.reduce_mean(grad_norms)
-        return avg_grad_norm.numpy()  # Return as a Python float for logging
-
+        
+        # Convert list of tensors to one tensor for computing stats
+        grad_norms_tensor = tf.stack(grad_norms)
+        avg_grad_norm = tf.reduce_mean(grad_norms_tensor)
+        std_grad_norm = tf.math.reduce_std(grad_norms_tensor)
+        return avg_grad_norm.numpy(), std_grad_norm.numpy()
 
 
     def get_weights(self):

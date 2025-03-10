@@ -10,6 +10,10 @@ from skimage.transform import resize
 from matplotlib import image as img
 from CNN import *
 from utils import *
+import warnings
+
+
+
 
 import psutil
 import tracemalloc
@@ -157,8 +161,16 @@ class Client:
             min_avail = min(mem_avail_list)
         else:
             avg_avail = peak_avail = min_avail = 0.0
+            
+        sample_x = self.X_train[:32]
+        sample_y = self.y_train[:32]
+
         
-        # Store round metrics in the list
+        # Compute gradient norm statistics on a sample batch
+        avg_grad_norm, std_grad_norm = self.model.compute_gradient_norm_stats(sample_x, sample_y)
+        print(f"Average gradient norm for this round: {avg_grad_norm:.4f}, Standard deviation: {std_grad_norm:.4f}")
+
+        # Include gradient stats in the round metrics dictionary
         round_stats = {
             'avg_cpu': avg_cpu,
             'peak_cpu': peak_cpu,
@@ -168,7 +180,9 @@ class Client:
             'min_mem': min_mem,
             'avg_avail': avg_avail,
             'peak_avail': peak_avail,
-            'min_avail': min_avail
+            'min_avail': min_avail,
+            'avg_grad_norm': avg_grad_norm,
+            'std_grad_norm': std_grad_norm
         }
         self.round_metrics.append(round_stats)
         
@@ -176,12 +190,7 @@ class Client:
         print(f"  CPU Usage - Avg: {avg_cpu:.2f}%, Peak: {peak_cpu:.2f}%, Min: {min_cpu:.2f}%")
         print(f"  Memory Usage - Avg: {avg_mem:.2f} MB, Peak: {peak_mem:.2f} MB, Min: {min_mem:.2f} MB")
         print(f"  Available Memory - Avg: {avg_avail:.2f} MB, Peak: {peak_avail:.2f} MB, Min: {min_avail:.2f} MB")
-        
-        sample_x = self.X_train[:32]
-        sample_y = self.y_train[:32]
-        avg_grad_norm = self.model.compute_average_gradient_norm(sample_x, sample_y)
 
-        print(f"Average gradient norm for this round: {avg_grad_norm:.4f}")
         
         plain_weights = self.model.get_weights()
             # *** NEW: Apply local differential privacy noise ***
@@ -194,7 +203,9 @@ class Client:
         )
         
         # Encrypt the noisy weights before sending them to the server
-        encrypted_weights = encrypt_weights(noisy_weights, self.tenseal_context)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", category=UserWarning)
+            encrypted_weights = encrypt_weights(noisy_weights, self.tenseal_context)
 
 
         return encrypted_weights
@@ -250,6 +261,19 @@ class Client:
         print(f"  Average per round Peak: {avg_peak_avail:.2f} MB")
         print(f"  Average per round Min: {avg_min_avail:.2f} MB")
         print("==== End of Report ====")
+        
+        # Gather per-round average gradient norms
+        grad_means = [r['avg_grad_norm'] for r in self.round_metrics]
+        overall_avg_grad = sum(grad_means) / n
+        # Compute the standard deviation of the average gradient norms across rounds
+        overall_std_grad = np.std(grad_means)
+        
+        print("\n==== Final Client Report ====")
+        # (Existing CPU, Memory, and Available Memory reports)
+        print("Gradient Update Norms:")
+        print(f"  Average across rounds: {overall_avg_grad:.4f}")
+        print(f"  Standard Deviation across rounds: {overall_std_grad:.4f}")
+        print("==== End of Report ====")
 
 
 # Socket Helper Functions
@@ -280,7 +304,6 @@ def receive_data(sock):
 
 def recvall(sock, n):
 
-   
     data = bytearray()
     while len(data) < n:
         try:
