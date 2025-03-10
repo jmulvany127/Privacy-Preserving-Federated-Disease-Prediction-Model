@@ -1,0 +1,288 @@
+import os
+import numpy as np
+import tensorflow as tf
+import socket
+import pickle
+import struct
+import time
+from sklearn.model_selection import train_test_split
+from matplotlib import image as img
+from skimage.transform import resize
+from sklearn.metrics import confusion_matrix, classification_report, accuracy_score, f1_score
+from CNN import *
+from utils import *
+
+import psutil
+import threading
+
+# --- Resource Sampling Functions for the Server ---
+
+def sample_cpu_usage(stop_event, cpu_usage_list):
+    """
+    Polls CPU usage every second and appends the value to cpu_usage_list until stop_event is set.
+    """
+    while not stop_event.is_set():
+        usage = psutil.cpu_percent(interval=1)
+        cpu_usage_list.append(usage)
+
+def sample_memory_usage(stop_event, mem_usage_list, mem_avail_list):
+    """
+    Polls the process's memory usage and the system's available memory every second,
+    appending the values (in MB) to mem_usage_list and mem_avail_list respectively,
+    until stop_event is set.
+    """
+    process = psutil.Process(os.getpid())
+    while not stop_event.is_set():
+        mem_usage = process.memory_info().rss / (1024 * 1024)
+        mem_avail = psutil.virtual_memory().available / (1024 * 1024)
+        mem_usage_list.append(mem_usage)
+        mem_avail_list.append(mem_avail)
+        time.sleep(1)
+
+# --- Modified Helper Functions for Socket Communication with Size Tracking ---
+
+def send_data(sock, data):
+    data_pickle = pickle.dumps(data)
+    sock.sendall(struct.pack('!I', len(data_pickle)))
+    sock.sendall(data_pickle)
+    return 4 + len(data_pickle)  # 4 bytes header + pickled data size
+
+def receive_data(sock):
+    raw_msglen = recvall(sock, 4)
+    if not raw_msglen:
+        return None, 0
+    msglen = struct.unpack('!I', raw_msglen)[0]
+    data_pickle = recvall(sock, msglen)
+    if not data_pickle:
+        return None, 0
+    return pickle.loads(data_pickle), 4 + msglen  # Header size + data size
+
+def recvall(sock, n):
+    data = bytearray()
+    while len(data) < n:
+        packet = sock.recv(n - len(data))
+        if not packet:
+            return None
+        data.extend(packet)
+    return data
+
+# --- Server Setup ---
+HOST = '127.0.0.1'
+PORT = 65432
+NUM_CLIENTS = 2
+
+# Load test data
+X, y = load_raw_covid_data(limit=1000)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, stratify=y, random_state=42)
+
+# Initialize global model
+global_model = CNN()
+global_model.set_initial_params()
+
+# Federated training settings
+rounds = 12
+# <-- Define your F1 threshold here. Change this value to the desired threshold.
+F1_THRESHOLD = 0.90  
+
+round_times = []
+comm_stats = {
+    'total_sent': 0,
+    'total_received': 0,
+    'sent_per_round': [],
+    'received_per_round': []
+}
+resource_metrics = []  # List of dicts for each round
+
+with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+    s.bind((HOST, PORT))
+    s.listen(NUM_CLIENTS)
+    print("Waiting for clients to connect...")
+
+    clients = []
+    for _ in range(NUM_CLIENTS):
+        conn, addr = s.accept()
+        clients.append(conn)
+        print(f"Connected to {addr}")
+
+    # Federated training rounds
+    for round in range(1, rounds + 1):
+        start_time = time.time()
+        print(f"\n--- Round {round}/{rounds} ---")
+        updates = []
+        round_sent = 0
+        round_received = 0
+
+        # Start resource sampling for this round
+        cpu_stop_event = threading.Event()
+        cpu_usage_list = []
+        cpu_thread = threading.Thread(target=sample_cpu_usage, args=(cpu_stop_event, cpu_usage_list))
+
+        mem_stop_event = threading.Event()
+        mem_usage_list = []
+        mem_avail_list = []
+        mem_thread = threading.Thread(target=sample_memory_usage, args=(mem_stop_event, mem_usage_list, mem_avail_list))
+
+        cpu_thread.start()
+        mem_thread.start()
+
+        # Communication: send global weights and receive client updates
+        global_weights = global_model.get_weights()
+        for client_conn in clients:
+            sent_size = send_data(client_conn, global_weights)
+            round_sent += sent_size
+            comm_stats['total_sent'] += sent_size
+
+            client_weights, received_size = receive_data(client_conn)
+            if client_weights is not None:
+                updates.append(client_weights)
+                round_received += received_size
+                comm_stats['total_received'] += received_size
+
+        comm_stats['sent_per_round'].append(round_sent)
+        comm_stats['received_per_round'].append(round_received)
+
+        # Aggregate client updates (simple average)
+        if updates:
+            avg_weights = [np.mean(weights, axis=0) for weights in zip(*updates)]
+            global_model.set_weights(avg_weights)
+
+        # Evaluate global model
+        y_pred_probs = global_model.predict(X_test)
+        y_pred = np.argmax(y_pred_probs, axis=1)
+        acc = accuracy_score(y_test, y_pred)
+        conf_matrix = confusion_matrix(y_test, y_pred)
+        class_report = classification_report(y_test, y_pred, digits=4)
+        f1 = f1_score(y_test, y_pred, average='weighted')  # <-- Compute F1 score
+
+        print(f"Round {round} - Accuracy: {acc*100:.2f}%")
+        print(f"F1 Score: {f1:.4f}")  # <-- Display F1 score
+        print("Confusion Matrix:")
+        print(conf_matrix)
+        print("Classification Report:")
+        print(class_report)
+
+        # *** Early Stopping Check Based on F1 Score ***
+        if f1 >= F1_THRESHOLD:
+            print(f"\n*** F1 threshold reached: {f1:.4f} >= {F1_THRESHOLD}. Stopping training early. ***")
+            # Optionally, you could notify the clients here if needed.
+            break  # Exit the training rounds loop
+
+        # Stop resource sampling for this round
+        cpu_stop_event.set()
+        mem_stop_event.set()
+        cpu_thread.join()
+        mem_thread.join()
+
+        # Compute and save resource usage statistics for the round
+        if cpu_usage_list:
+            avg_cpu = sum(cpu_usage_list) / len(cpu_usage_list)
+            peak_cpu = max(cpu_usage_list)
+            min_cpu = min(cpu_usage_list)
+        else:
+            avg_cpu = peak_cpu = min_cpu = 0.0
+
+        if mem_usage_list:
+            avg_mem = sum(mem_usage_list) / len(mem_usage_list)
+            peak_mem = max(mem_usage_list)
+            min_mem = min(mem_usage_list)
+        else:
+            avg_mem = peak_mem = min_mem = 0.0
+
+        if mem_avail_list:
+            avg_avail = sum(mem_avail_list) / len(mem_avail_list)
+            peak_avail = max(mem_avail_list)
+            min_avail = min(mem_avail_list)
+        else:
+            avg_avail = peak_avail = min_avail = 0.0
+
+        round_resource = {
+            'avg_cpu': avg_cpu,
+            'peak_cpu': peak_cpu,
+            'min_cpu': min_cpu,
+            'avg_mem': avg_mem,
+            'peak_mem': peak_mem,
+            'min_mem': min_mem,
+            'avg_avail': avg_avail,
+            'peak_avail': peak_avail,
+            'min_avail': min_avail
+        }
+        resource_metrics.append(round_resource)
+
+        end_time = time.time()
+        round_duration = end_time - start_time
+        round_times.append(round_duration)
+        print(f"Round {round} duration: {round_duration:.2f} seconds")
+
+    # Final Reporting (this section will run regardless of early stopping)
+    total_time = sum(round_times)
+    average_time_per_round = total_time / len(round_times) if round_times else 0
+    average_time_per_round_per_client = average_time_per_round / NUM_CLIENTS
+
+    print("\n=== Timing Report ===")
+    print(f"Total training time: {total_time:.2f} seconds")
+    print(f"Average time per round: {average_time_per_round:.2f} seconds")
+    print(f"Average time per round per client: {average_time_per_round_per_client:.2f} seconds")
+    print("Round durations:")
+    for idx, duration in enumerate(round_times, 1):
+        print(f"  Round {idx}: {duration:.2f} seconds")
+
+    total_transferred = comm_stats['total_sent'] + comm_stats['total_received']
+    avg_sent_per_client_total = comm_stats['total_sent'] / NUM_CLIENTS
+    avg_received_per_client_total = comm_stats['total_received'] / NUM_CLIENTS
+
+    print("\n=== Communication Overhead Report ===")
+    print("Summary of Communication:")
+    print(f"  Total Transferred: {total_transferred:,} bytes")
+    print(f"  Total Sent: {comm_stats['total_sent']:,} bytes")
+    print(f"  Total Received: {comm_stats['total_received']:,} bytes")
+    print(f"  Avg Sent per Client (Total): {avg_sent_per_client_total:,.2f} bytes")
+    print(f"  Avg Received per Client (Total): {avg_received_per_client_total:,.2f} bytes")
+    print(f"  Avg Sent per Client per Round: {avg_sent_per_client_total/len(round_times):,.2f} bytes")
+    print(f"  Avg Received per Client per Round: {avg_received_per_client_total/len(round_times):,.2f} bytes")
+
+    if resource_metrics:
+        n = len(resource_metrics)
+        avg_cpu_overall = sum(r['avg_cpu'] for r in resource_metrics) / n
+        overall_peak_cpu = max(r['peak_cpu'] for r in resource_metrics)
+        overall_min_cpu = min(r['min_cpu'] for r in resource_metrics)
+        avg_peak_cpu = sum(r['peak_cpu'] for r in resource_metrics) / n
+        avg_min_cpu = sum(r['min_cpu'] for r in resource_metrics) / n
+
+        avg_mem_overall = sum(r['avg_mem'] for r in resource_metrics) / n
+        overall_peak_mem = max(r['peak_mem'] for r in resource_metrics)
+        overall_min_mem = min(r['min_mem'] for r in resource_metrics)
+        avg_peak_mem = sum(r['peak_mem'] for r in resource_metrics) / n
+        avg_min_mem = sum(r['min_mem'] for r in resource_metrics) / n
+
+        avg_avail_overall = sum(r['avg_avail'] for r in resource_metrics) / n
+        overall_peak_avail = max(r['peak_avail'] for r in resource_metrics)
+        overall_min_avail = min(r['min_avail'] for r in resource_metrics)
+        avg_peak_avail = sum(r['peak_avail'] for r in resource_metrics) / n
+        avg_min_avail = sum(r['min_avail'] for r in resource_metrics) / n
+
+        print("\n=== Resource Usage Report ===")
+        print("CPU Usage:")
+        print(f"  Average of averages: {avg_cpu_overall:.2f}%")
+        print(f"  Overall Peak: {overall_peak_cpu:.2f}%")
+        print(f"  Overall Min: {overall_min_cpu:.2f}%")
+        print(f"  Average per round Peak: {avg_peak_cpu:.2f}%")
+        print(f"  Average per round Min: {avg_min_cpu:.2f}%")
+        print("Memory Usage:")
+        print(f"  Average of averages: {avg_mem_overall:.2f} MB")
+        print(f"  Overall Peak: {overall_peak_mem:.2f} MB")
+        print(f"  Overall Min: {overall_min_mem:.2f} MB")
+        print(f"  Average per round Peak: {avg_peak_mem:.2f} MB")
+        print(f"  Average per round Min: {avg_min_mem:.2f} MB")
+        print("Available Memory:")
+        print(f"  Average of averages: {avg_avail_overall:.2f} MB")
+        print(f"  Overall Peak: {overall_peak_avail:.2f} MB")
+        print(f"  Overall Min: {overall_min_avail:.2f} MB")
+        print(f"  Average per round Peak: {avg_peak_avail:.2f} MB")
+        print(f"  Average per round Min: {avg_min_avail:.2f} MB")
+    else:
+        print("\nNo resource usage metrics collected.")
+
+    # Close client connections
+    for conn in clients:
+        conn.close()
+    print("\nTraining complete.")
