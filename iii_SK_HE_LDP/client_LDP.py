@@ -168,7 +168,7 @@ class Client:
         
         # Compute gradient norm statistics on a sample batch
         avg_grad_norm, std_grad_norm = self.model.compute_gradient_norm_stats(sample_x, sample_y)
-        print(f"Average gradient norm for this round: {avg_grad_norm:.4f}, Standard deviation: {std_grad_norm:.4f}")
+        #print(f"Average gradient norm for this round: {avg_grad_norm:.4f}, Standard deviation: {std_grad_norm:.4f}")
 
         # Include gradient stats in the round metrics dictionary
         round_stats = {
@@ -262,6 +262,10 @@ class Client:
         print(f"  Average per round Min: {avg_min_avail:.2f} MB")
         print("==== End of Report ====")
         
+         # Print gradient update norms per round
+        print("\n==== Gradient Update Norms per Round ====")
+        for i, metrics in enumerate(self.round_metrics, start=1):
+            print(f"Round {i}: Average gradient norm: {metrics['avg_grad_norm']:.4f}, Standard deviation: {metrics['std_grad_norm']:.4f}")
         # Gather per-round average gradient norms
         grad_means = [r['avg_grad_norm'] for r in self.round_metrics]
         overall_avg_grad = sum(grad_means) / n
