@@ -93,8 +93,9 @@ def add_dp_noise(weights, epsilon, sensitivity, num_clients, noise_type='laplace
 # Client Class
 class Client:
     def __init__(self, X_train, y_train, X_val, y_val,
-                 dp_epsilon=1.0, dp_sensitivity=1.0, num_clients=2, dp_noise_type='laplace'):
-        self.model = CNN()
+                 dp_epsilon=1.0, dp_sensitivity=1.0, num_clients=2, dp_noise_type='laplace', max_gradient=0.963):
+        # Pass max_gradient to CNN on creation
+        self.model = CNN(max_gradient=max_gradient)
         self.model.set_initial_params()
         self.X_train = X_train
         self.y_train = y_train
