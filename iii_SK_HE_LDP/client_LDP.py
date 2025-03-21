@@ -58,8 +58,36 @@ def encrypt_weights(weights, ts_context):
         flat_weight = weight.flatten().tolist()
         enc_weight = ts.ckks_vector(ts_context, flat_weight)
         encrypted_weights.append(enc_weight.serialize())
-
     return encrypted_weights
+        
+def clip_weight_update(old, new, threshold):
+    update = new - old
+    norm = np.linalg.norm(update)
+    if norm > threshold:
+        update = update * (threshold / norm)
+    return old + update
+
+# Define a helper function or mapping for dynamic threshold:
+def get_dynamic_threshold(round_num):
+    # Example mapping: you can fill in with your own values.
+    thresholds = {
+        1: 100000000+2*244000000,
+        2: 61000000+2*136000000,
+        3: 45000000+2*1140000000,
+        4: 37000000+2*93000000,
+        5: 30000000+2*75000000,
+        6: 30000000+2*75000000,
+        7: 30000000+2*75000000,
+        8: 25000000+2*65000000,
+        9: 22000000+2*60000000,
+        # From round 10 onward, threshold remains constant:
+    }
+    if round_num in thresholds:
+        return thresholds[round_num]
+    else:
+        return 22000000+2*60000000  # This is the threshold for round 10 onward
+
+   
 def add_dp_noise(weights, epsilon, sensitivity, num_clients, noise_type='laplace'):
     """
     Applies local differential privacy noise to each weight matrix.
@@ -93,9 +121,9 @@ def add_dp_noise(weights, epsilon, sensitivity, num_clients, noise_type='laplace
 # Client Class
 class Client:
     def __init__(self, X_train, y_train, X_val, y_val,
-                 dp_epsilon=1.0, dp_sensitivity=1.0, num_clients=2, dp_noise_type='laplace', max_gradient=0.963):
+                 dp_epsilon=10.0, num_clients=2, dp_noise_type='laplace'):
         # Pass max_gradient to CNN on creation
-        self.model = CNN(max_gradient=max_gradient)
+        self.model = CNN()
         self.model.set_initial_params()
         self.X_train = X_train
         self.y_train = y_train
@@ -106,11 +134,12 @@ class Client:
         
         # Store DP parameters
         self.dp_epsilon = dp_epsilon
-        self.dp_sensitivity = dp_sensitivity
         self.num_clients = num_clients
         self.dp_noise_type = dp_noise_type
-    
-    
+        
+        # Initialize the update threshold dynamically and a round counter
+        self.current_round = 0  
+        self.update_threshold = None  # Will be set at each round
 
     def update(self, global_weights):
         self.model.set_weights(global_weights)
@@ -166,11 +195,22 @@ class Client:
         sample_x = self.X_train[:32]
         sample_y = self.y_train[:32]
 
-        
+        self.current_round += 1
+        # Dynamically set the threshold based on the current round.
+        self.update_threshold = get_dynamic_threshold(self.current_round)
         # Compute gradient norm statistics on a sample batch
         avg_grad_norm, std_grad_norm = self.model.compute_gradient_norm_stats(sample_x, sample_y)
         #print(f"Average gradient norm for this round: {avg_grad_norm:.4f}, Standard deviation: {std_grad_norm:.4f}")
-
+        plain_weights = self.model.get_weights()
+        # Compute weight update norms: difference between new weights and global weights
+        avg_update_norm, std_update_norm = self.model.compute_weight_update_norm_stats(global_weights, plain_weights)
+        
+        # Clip each weight update (difference between new weights and global weights)
+        clipped_weights = []
+        for old_weight, new_weight in zip(global_weights, plain_weights):
+            clipped_weight = clip_weight_update(old_weight, new_weight, self.update_threshold)
+            clipped_weights.append(clipped_weight)
+            
         # Include gradient stats in the round metrics dictionary
         round_stats = {
             'avg_cpu': avg_cpu,
@@ -183,7 +223,9 @@ class Client:
             'peak_avail': peak_avail,
             'min_avail': min_avail,
             'avg_grad_norm': avg_grad_norm,
-            'std_grad_norm': std_grad_norm
+            'std_grad_norm': std_grad_norm,
+            'avg_weight_update_norm': avg_update_norm,
+            'std_weight_update_norm': std_update_norm
         }
         self.round_metrics.append(round_stats)
         
@@ -193,12 +235,11 @@ class Client:
         print(f"  Available Memory - Avg: {avg_avail:.2f} MB, Peak: {peak_avail:.2f} MB, Min: {min_avail:.2f} MB")
 
         
-        plain_weights = self.model.get_weights()
-            # *** NEW: Apply local differential privacy noise ***
+
         noisy_weights = add_dp_noise(
-            plain_weights,
+            clipped_weights,
             epsilon=self.dp_epsilon,
-            sensitivity=self.dp_sensitivity,
+            sensitivity=self.update_threshold,
             num_clients=self.num_clients,
             noise_type=self.dp_noise_type
         )
@@ -207,7 +248,6 @@ class Client:
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", category=UserWarning)
             encrypted_weights = encrypt_weights(noisy_weights, self.tenseal_context)
-
 
         return encrypted_weights
     
@@ -263,22 +303,35 @@ class Client:
         print(f"  Average per round Min: {avg_min_avail:.2f} MB")
         print("==== End of Report ====")
         
-         # Print gradient update norms per round
-        print("\n==== Gradient Update Norms per Round ====")
-        for i, metrics in enumerate(self.round_metrics, start=1):
-            print(f"Round {i}: Average gradient norm: {metrics['avg_grad_norm']:.4f}, Standard deviation: {metrics['std_grad_norm']:.4f}")
+        # # Print gradient update norms per round
+        # print("\n==== Gradient Update Norms per Round ====")
+        # for i, metrics in enumerate(self.round_metrics, start=1):
+        #    print(f"Round {i}: Average gradient norm: {metrics['avg_grad_norm']:.4f}, Standard deviation: {metrics['std_grad_norm']:.4f}")
         # Gather per-round average gradient norms
-        grad_means = [r['avg_grad_norm'] for r in self.round_metrics]
-        overall_avg_grad = sum(grad_means) / n
+        #grad_means = [r['avg_grad_norm'] for r in self.round_metrics]
+        #overall_avg_grad = sum(grad_means) / n
         # Compute the standard deviation of the average gradient norms across rounds
-        overall_std_grad = np.std(grad_means)
+        #overall_std_grad = np.std(grad_means)
         
-        print("\n==== Final Client Report ====")
-        # (Existing CPU, Memory, and Available Memory reports)
-        print("Gradient Update Norms:")
-        print(f"  Average across rounds: {overall_avg_grad:.4f}")
-        print(f"  Standard Deviation across rounds: {overall_std_grad:.4f}")
-        print("==== End of Report ====")
+        #print("Gradient Update Norms:")
+        #print(f"  Average across rounds: {overall_avg_grad:.4f}")
+        #print(f"  Standard Deviation across rounds: {overall_std_grad:.4f}")
+        #print("==== End of Report ====")
+        
+        n = len(self.round_metrics)
+        # Collect per-round weight update norms.
+        update_avgs = [r['avg_weight_update_norm'] for r in self.round_metrics]
+        update_stds = [r['std_weight_update_norm'] for r in self.round_metrics]
+        
+        overall_avg_update = np.mean(update_avgs)
+        overall_std_update = np.std(update_avgs)
+        print("Per-Round Weight Update Norms:")
+        for i, r in enumerate(self.round_metrics, start=1):
+            print(f"  Round {i}: Average = {r['avg_weight_update_norm']:.4f}, Std Dev = {r['std_weight_update_norm']:.4f}")
+        
+        print("\nOverall Weight Update Norms Across Rounds:")
+        print(f"  Average of averages: {overall_avg_update:.4f}")
+        print(f"  Standard deviation across rounds: {overall_std_update:.4f}")
 
 
 # Socket Helper Functions
@@ -332,10 +385,8 @@ def recvall(sock, n):
 # Client Setup
 parser = argparse.ArgumentParser()
 parser.add_argument('--client_id', type=int, required=True, choices=[0, 1], help="Client ID (0, 1)")
-parser.add_argument('--dp_epsilon', type=float, default=1.0,
+parser.add_argument('--dp_epsilon', type=float, default=2.0,
                     help="Privacy budget epsilon for local differential privacy")
-parser.add_argument('--dp_sensitivity', type=float, default=1.0,
-                    help="Sensitivity for DP noise calculation")
 parser.add_argument('--num_clients', type=int, default=2,
                     help="Total number of clients in the system")
 parser.add_argument('--dp_noise_type', type=str, default='laplace', choices=['laplace', 'gaussian'],
@@ -361,7 +412,6 @@ elif args.client_id == 1:
 
 client = Client(X_client, y_client, X_val_client, y_val_client,
                 dp_epsilon=args.dp_epsilon,
-                dp_sensitivity=args.dp_sensitivity,
                 num_clients=args.num_clients,
                 dp_noise_type=args.dp_noise_type)
 

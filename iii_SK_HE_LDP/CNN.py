@@ -55,6 +55,14 @@ class CNN:
             metrics=['accuracy']
         )
         self.model = model
+        
+    def compute_weight_update_norm_stats(self, old_weights, new_weights):
+
+        diffs = [new - old for new, old in zip(new_weights, old_weights)]
+        norms = [np.linalg.norm(diff) for diff in diffs]
+        avg_norm = np.mean(norms)
+        std_norm = np.std(norms)
+        return avg_norm, std_norm
 
     def compute_gradient_norm_stats(self, x_batch, y_batch):
         x_batch = tf.convert_to_tensor(x_batch, dtype=tf.float32)
