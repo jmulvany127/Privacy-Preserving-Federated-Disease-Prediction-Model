@@ -13,11 +13,11 @@ class TimeHistory(Callback):
 
 # CNN Model Definition
 class CNN:
-    def __init__(self, weight_decimals=8, max_gradient=0.963):
+    def __init__(self, weight_decimals=8):
         self.model = None
         self.WEIGHT_DECIMALS = self.set_weight_decimals(weight_decimals)
         # Now max_gradient is passed as a parameter
-        self.max_gradient = max_gradient
+        #self.max_gradient = max_gradient
 
     def set_weight_decimals(self, weight_decimals):
         return weight_decimals if 2 <= weight_decimals <= 8 else 8
@@ -47,7 +47,7 @@ class CNN:
         
         # Use Adam optimizer with gradient clipping.
         # The clipnorm parameter ensures that the gradient norm does not exceed self.max_gradient.
-        optimizer = tf.keras.optimizers.Adam(learning_rate=0.001, clipnorm=self.max_gradient)
+        optimizer = tf.keras.optimizers.Adam(learning_rate=0.001)
         
         model.compile(
             loss=tf.keras.losses.sparse_categorical_crossentropy,
@@ -57,12 +57,11 @@ class CNN:
         self.model = model
         
     def compute_weight_update_norm_stats(self, old_weights, new_weights):
-
         diffs = [new - old for new, old in zip(new_weights, old_weights)]
         norms = [np.linalg.norm(diff) for diff in diffs]
-        avg_norm = np.mean(norms)
-        std_norm = np.std(norms)
-        return avg_norm, std_norm
+        stds = [np.std(diff) for diff in diffs]
+        shapes = [diff.shape for diff in diffs]
+        return norms, stds, shapes
 
     def compute_gradient_norm_stats(self, x_batch, y_batch):
         x_batch = tf.convert_to_tensor(x_batch, dtype=tf.float32)

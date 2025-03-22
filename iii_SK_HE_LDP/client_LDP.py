@@ -13,7 +13,7 @@ from utils import *
 import warnings
 
 
-
+import csv
 
 import psutil
 import tracemalloc
@@ -67,13 +67,22 @@ def clip_weight_update(old, new, threshold):
         update = update * (threshold / norm)
     return old + update
 
+def log_weight_update_stats(round_number, norms, stds, shapes, csv_path="layer_update_norms.csv"):
+    file_exists = os.path.isfile(csv_path)
+    with open(csv_path, mode='a', newline='') as file:
+        writer = csv.writer(file)
+        if not file_exists:
+            writer.writerow(["round", "layer_index", "norm", "std_dev", "shape"])
+        for i, (norm, std, shape) in enumerate(zip(norms, stds, shapes)):
+            writer.writerow([round_number, i, norm, std, shape])
+
 # Define a helper function or mapping for dynamic threshold:
 def get_dynamic_threshold(round_num):
     # Example mapping: you can fill in with your own values.
     thresholds = {
         1: 100000000+2*244000000,
         2: 61000000+2*136000000,
-        3: 45000000+2*1140000000,
+        3: 45000000+2*114000000,
         4: 37000000+2*93000000,
         5: 30000000+2*75000000,
         6: 30000000+2*75000000,
@@ -91,37 +100,46 @@ def get_dynamic_threshold(round_num):
 def add_dp_noise(weights, epsilon, sensitivity, num_clients, noise_type='laplace'):
     """
     Applies local differential privacy noise to each weight matrix.
-    
-    Parameters:
-      weights (list of np.ndarray): Model weights.
-      epsilon (float): Privacy budget.
-      sensitivity (float): Sensitivity value for the weight updates.
-      num_clients (int): Total number of clients. Used to adjust noise scale.
-      noise_type (str): 'laplace' or 'gaussian'.
-    
-    Returns:
-      list of np.ndarray: Noisy weights.
-    
-    The noise scale is adjusted by a factor of 1/sqrt(num_clients) so that if there are
-    more clients (and hence more averaging), the noise added per client can be lower.
+    Prints readable summaries before and after adding noise.
     """
     noisy_weights = []
-    noise_scale = sensitivity / (epsilon * np.sqrt(num_clients))
-    for weight in weights:
+    noise_scale =  0 #sensitivity / (1000*epsilon * np.sqrt(num_clients))
+
+    print("\n=== DP Noise Injection Summary ===")
+    print(f"Noise type: {noise_type}")
+    print(f"Epsilon: {epsilon}")
+    print(f"Sensitivity: {sensitivity}")
+    print(f"Noise scale: {noise_scale:.6e}")
+    
+    for i, weight in enumerate(weights):
+        #print(f"\n-- Weight Tensor {i} --")
+        #print(f"Original stats: shape={weight.shape}, min={np.min(weight):.4e}, max={np.max(weight):.4e}, mean={np.mean(weight):.4e}, std={np.std(weight):.4e}")
+        
         if noise_type == 'laplace':
             noise = np.random.laplace(loc=0.0, scale=noise_scale, size=weight.shape)
         elif noise_type == 'gaussian':
             noise = np.random.normal(loc=0.0, scale=noise_scale, size=weight.shape)
         else:
             raise ValueError("Unsupported noise type. Choose 'laplace' or 'gaussian'.")
-        noisy_weights.append(weight + noise)
+
+        noisy_weight = weight + noise
+        noisy_weights.append(noisy_weight)
+
+        #print(f"Noisy stats   : shape={noisy_weight.shape}, min={np.min(noisy_weight):.4e}, max={np.max(noisy_weight):.4e}, mean={np.mean(noisy_weight):.4e}, std={np.std(noisy_weight):.4e}")
+        
+        # Optional: print small samples of values
+        #print("Sample original values:", np.round(weight.flatten()[:5], 4).tolist())
+        #print("Sample noise values   :", np.round(noise.flatten()[:5], 4).tolist())
+        #print("Sample noisy values   :", np.round(noisy_weight.flatten()[:5], 4).tolist())
+
+    print("=== End of Noise Injection ===\n")
     return noisy_weights
 
 
 # Client Class
 class Client:
     def __init__(self, X_train, y_train, X_val, y_val,
-                 dp_epsilon=10.0, num_clients=2, dp_noise_type='laplace'):
+                 dp_epsilon=1.0, num_clients=2, dp_noise_type='laplace'):
         # Pass max_gradient to CNN on creation
         self.model = CNN()
         self.model.set_initial_params()
@@ -203,7 +221,10 @@ class Client:
         #print(f"Average gradient norm for this round: {avg_grad_norm:.4f}, Standard deviation: {std_grad_norm:.4f}")
         plain_weights = self.model.get_weights()
         # Compute weight update norms: difference between new weights and global weights
-        avg_update_norm, std_update_norm = self.model.compute_weight_update_norm_stats(global_weights, plain_weights)
+        norms, stds, shapes = self.model.compute_weight_update_norm_stats(global_weights, plain_weights)
+        #log_weight_update_stats(self.current_round, norms, stds, shapes)
+        avg_update_norm = np.mean(norms)
+        std_update_norm = np.mean(stds)
         
         # Clip each weight update (difference between new weights and global weights)
         clipped_weights = []
