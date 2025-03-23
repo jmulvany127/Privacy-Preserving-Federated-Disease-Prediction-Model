@@ -22,6 +22,21 @@ import time
 import threading  # For sampling threads
 
 import tenseal as ts
+import pandas as pd
+
+def load_layer_sensitivities(csv_path):
+    df = pd.read_csv(csv_path)
+    round_to_layer_sens = {}
+
+    for round_num, group in df.groupby('round'):
+        round_to_layer_sens[int(round_num)] = {
+            int(row['layer_index']): row['avg_diffs'] for _, row in group.iterrows()
+        }
+
+    return round_to_layer_sens
+
+layer_sensitivity_dict = load_layer_sensitivities("layer_update_avgs_1.csv")
+
 
 # Function to sample CPU usage during training
 def sample_cpu_usage(stop_event, cpu_usage_list):
@@ -67,54 +82,34 @@ def clip_weight_update(old, new, threshold):
         update = update * (threshold / norm)
     return old + update
 
-def log_weight_update_stats(round_number, norms, stds, shapes, csv_path="layer_update_norms.csv"):
-    file_exists = os.path.isfile(csv_path)
-    with open(csv_path, mode='a', newline='') as file:
-        writer = csv.writer(file)
-        if not file_exists:
-            writer.writerow(["round", "layer_index", "norm", "std_dev", "shape"])
-        for i, (norm, std, shape) in enumerate(zip(norms, stds, shapes)):
-            writer.writerow([round_number, i, norm, std, shape])
+def log_weight_update_stats(round_number, norms, stds, shapes, csv_path="layer_update_avgs.csv"):
+    if args.client_id == 0:
+        file_exists = os.path.isfile(csv_path)
+        with open(csv_path, mode='a', newline='') as file:
+            writer = csv.writer(file)
+            if not file_exists:
+                writer.writerow(["round", "layer_index", "avg_diffs", "std_dev", "shape"])
+            for i, (norm, std, shape) in enumerate(zip(norms, stds, shapes)):
+                writer.writerow([round_number, i, norm, std, shape])
 
-# Define a helper function or mapping for dynamic threshold:
-def get_dynamic_threshold(round_num):
-    # Example mapping: you can fill in with your own values.
-    thresholds = {
-        1: 100000000+2*244000000,
-        2: 61000000+2*136000000,
-        3: 45000000+2*114000000,
-        4: 37000000+2*93000000,
-        5: 30000000+2*75000000,
-        6: 30000000+2*75000000,
-        7: 30000000+2*75000000,
-        8: 25000000+2*65000000,
-        9: 22000000+2*60000000,
-        # From round 10 onward, threshold remains constant:
-    }
-    if round_num in thresholds:
-        return thresholds[round_num]
-    else:
-        return 22000000+2*60000000  # This is the threshold for round 10 onward
 
    
-def add_dp_noise(weights, epsilon, sensitivity, num_clients, noise_type='laplace'):
+def add_dp_noise(weights, epsilon, round_sensitivities, round_num, num_clients, noise_type='laplace'):
     """
-    Applies local differential privacy noise to each weight matrix.
-    Prints readable summaries before and after adding noise.
+    Adds DP noise to each weight tensor using round-specific, layer-specific sensitivities.
     """
     noisy_weights = []
-    noise_scale =  0 #sensitivity / (1000*epsilon * np.sqrt(num_clients))
+    print(f"\n=== DP Noise Injection (Round {round_num}) ===")
+    print(f"Epsilon: {epsilon}, Noise Type: {noise_type}")
 
-    print("\n=== DP Noise Injection Summary ===")
-    print(f"Noise type: {noise_type}")
-    print(f"Epsilon: {epsilon}")
-    print(f"Sensitivity: {sensitivity}")
-    print(f"Noise scale: {noise_scale:.6e}")
-    
     for i, weight in enumerate(weights):
-        #print(f"\n-- Weight Tensor {i} --")
-        #print(f"Original stats: shape={weight.shape}, min={np.min(weight):.4e}, max={np.max(weight):.4e}, mean={np.mean(weight):.4e}, std={np.std(weight):.4e}")
-        
+        sensitivity = round_sensitivities.get(round_num, {}).get(i, 1e-5)  # default to a small value
+        noise_scale = sensitivity / (epsilon * np.sqrt(num_clients))
+
+        print(f"\n-- Layer {i} --")
+        print(f"Sensitivity: {sensitivity:.4f}")
+        print(f"Noise Scale: {noise_scale:.4f}")
+
         if noise_type == 'laplace':
             noise = np.random.laplace(loc=0.0, scale=noise_scale, size=weight.shape)
         elif noise_type == 'gaussian':
@@ -125,21 +120,15 @@ def add_dp_noise(weights, epsilon, sensitivity, num_clients, noise_type='laplace
         noisy_weight = weight + noise
         noisy_weights.append(noisy_weight)
 
-        #print(f"Noisy stats   : shape={noisy_weight.shape}, min={np.min(noisy_weight):.4e}, max={np.max(noisy_weight):.4e}, mean={np.mean(noisy_weight):.4e}, std={np.std(noisy_weight):.4e}")
-        
-        # Optional: print small samples of values
-        #print("Sample original values:", np.round(weight.flatten()[:5], 4).tolist())
-        #print("Sample noise values   :", np.round(noise.flatten()[:5], 4).tolist())
-        #print("Sample noisy values   :", np.round(noisy_weight.flatten()[:5], 4).tolist())
-
     print("=== End of Noise Injection ===\n")
     return noisy_weights
+
 
 
 # Client Class
 class Client:
     def __init__(self, X_train, y_train, X_val, y_val,
-                 dp_epsilon=1.0, num_clients=2, dp_noise_type='laplace'):
+                 dp_epsilon=5.0, num_clients=2, dp_noise_type='laplace'):
         # Pass max_gradient to CNN on creation
         self.model = CNN()
         self.model.set_initial_params()
@@ -215,21 +204,19 @@ class Client:
 
         self.current_round += 1
         # Dynamically set the threshold based on the current round.
-        self.update_threshold = get_dynamic_threshold(self.current_round)
+        #self.update_threshold = get_dynamic_threshold(self.current_round)
         # Compute gradient norm statistics on a sample batch
-        avg_grad_norm, std_grad_norm = self.model.compute_gradient_norm_stats(sample_x, sample_y)
+        #avg_grad_norm, std_grad_norm = self.model.compute_gradient_norm_stats(sample_x, sample_y)
         #print(f"Average gradient norm for this round: {avg_grad_norm:.4f}, Standard deviation: {std_grad_norm:.4f}")
         plain_weights = self.model.get_weights()
         # Compute weight update norms: difference between new weights and global weights
-        norms, stds, shapes = self.model.compute_weight_update_norm_stats(global_weights, plain_weights)
-        #log_weight_update_stats(self.current_round, norms, stds, shapes)
-        avg_update_norm = np.mean(norms)
-        std_update_norm = np.mean(stds)
-        
+        avg_diffs, stds, shapes = self.model.compute_weight_update_norm_stats(global_weights, plain_weights)
+        log_weight_update_stats(self.current_round, avg_diffs, stds, shapes)
+  
         # Clip each weight update (difference between new weights and global weights)
         clipped_weights = []
         for old_weight, new_weight in zip(global_weights, plain_weights):
-            clipped_weight = clip_weight_update(old_weight, new_weight, self.update_threshold)
+            clipped_weight = new_weight #old_weight #clip_weight_update(old_weight, new_weight, self.update_threshold)
             clipped_weights.append(clipped_weight)
             
         # Include gradient stats in the round metrics dictionary
@@ -243,10 +230,10 @@ class Client:
             'avg_avail': avg_avail,
             'peak_avail': peak_avail,
             'min_avail': min_avail,
-            'avg_grad_norm': avg_grad_norm,
-            'std_grad_norm': std_grad_norm,
-            'avg_weight_update_norm': avg_update_norm,
-            'std_weight_update_norm': std_update_norm
+            #'avg_grad_norm': avg_grad_norm,
+            #'std_grad_norm': std_grad_norm,
+            #'avg_weight_update_norm': avg_update_norm,
+            #'std_weight_update_norm': std_update_norm
         }
         self.round_metrics.append(round_stats)
         
@@ -260,7 +247,8 @@ class Client:
         noisy_weights = add_dp_noise(
             clipped_weights,
             epsilon=self.dp_epsilon,
-            sensitivity=self.update_threshold,
+            round_sensitivities=layer_sensitivity_dict,
+            round_num=self.current_round,
             num_clients=self.num_clients,
             noise_type=self.dp_noise_type
         )
@@ -341,18 +329,18 @@ class Client:
         
         n = len(self.round_metrics)
         # Collect per-round weight update norms.
-        update_avgs = [r['avg_weight_update_norm'] for r in self.round_metrics]
-        update_stds = [r['std_weight_update_norm'] for r in self.round_metrics]
+        #update_avgs = [r['avg_weight_update_norm'] for r in self.round_metrics]
+       # update_stds = [r['std_weight_update_norm'] for r in self.round_metrics]
         
-        overall_avg_update = np.mean(update_avgs)
-        overall_std_update = np.std(update_avgs)
-        print("Per-Round Weight Update Norms:")
-        for i, r in enumerate(self.round_metrics, start=1):
-            print(f"  Round {i}: Average = {r['avg_weight_update_norm']:.4f}, Std Dev = {r['std_weight_update_norm']:.4f}")
+       # overall_avg_update = np.mean(update_avgs)
+       # overall_std_update = np.std(update_avgs)
+       # print("Per-Round Weight Update Norms:")
+       # for i, r in enumerate(self.round_metrics, start=1):
+       #     print(f"  Round {i}: Average = {r['avg_weight_update_norm']:.4f}, Std Dev = {r['std_weight_update_norm']:.4f}")
         
-        print("\nOverall Weight Update Norms Across Rounds:")
-        print(f"  Average of averages: {overall_avg_update:.4f}")
-        print(f"  Standard deviation across rounds: {overall_std_update:.4f}")
+        #print("\nOverall Weight Update Norms Across Rounds:")
+        #print(f"  Average of averages: {overall_avg_update:.4f}")
+       # print(f"  Standard deviation across rounds: {overall_std_update:.4f}")
 
 
 # Socket Helper Functions
