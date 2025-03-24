@@ -100,6 +100,6 @@ class CNN:
             validation_data=(X_val, y_val),
             epochs=epochs,
             class_weight=self.class_weight,
-            workers=workers,
+            # workers=workers,
             callbacks=[time_callback]
         )
