@@ -125,7 +125,6 @@ serialized_context = ts_context.serialize(save_secret_key=False)
 # --- Server Setup ---
 HOST = '127.0.0.1'
 PORT = 65432
-NUM_CLIENTS = 2  # dynamically adjustable
 client_data, (test_files, test_labels) = load_raw_covid_data_for_federated(num_clients=NUM_CLIENTS)
 
 # Server test set (unseen by any client)
