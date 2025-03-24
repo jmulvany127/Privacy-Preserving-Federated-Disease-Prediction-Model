@@ -17,7 +17,25 @@ import threading
 
 import tenseal as ts
 
+import argparse
 
+# --- Parse CLI arguments ---
+parser = argparse.ArgumentParser(description="Federated Server")
+parser.add_argument('--num_clients', type=int, default=2, help='Number of federated clients')
+args = parser.parse_args()
+
+NUM_CLIENTS = args.num_clients
+
+# Function to handle communication with each client during one round
+def handle_client_communication(client_conn, global_weights, updates_list, updates_lock, comm_stats, index):
+    sent_size = send_data(client_conn, global_weights)
+    comm_stats['total_sent'] += sent_size
+
+    client_encrypted_update, received_size = receive_data(client_conn)
+    if client_encrypted_update is not None:
+        with updates_lock:
+            updates_list.append(client_encrypted_update)
+        comm_stats['total_received'] += received_size
 # --- Resource Sampling Functions for the Server ---
 
 def sample_cpu_usage(stop_event, cpu_usage_list):
@@ -144,11 +162,11 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         # Send the serialized TenSEAL context to the client.
         send_data(conn, serialized_context)
 
-    # Federated training rounds
     for round in range(1, rounds + 1):
         start_time = time.time()
         print(f"\n--- Round {round}/{rounds} ---")
         updates = []
+        updates_lock = threading.Lock()
         round_sent = 0
         round_received = 0
 
@@ -166,34 +184,18 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         mem_thread.start()
 
         global_weights = global_model.get_weights()
-        
-        #print("\n[Server] Global Weights Summary Before Sending:")
-        #for idx, weight in enumerate(global_weights):
-        #    print(f"  Weight {idx}: shape={weight.shape}, dtype={weight.dtype}, "
-        #       f"min={np.min(weight):.4f}, max={np.max(weight):.4f}, mean={np.mean(weight):.4f}")
 
-        # Serialize and print the size of the pickled data
-        #try:
-        #    data_pickle = pickle.dumps(global_weights)
-        #    print(f"[Server] Serialized global weights size: {len(data_pickle)} bytes")
-        #except Exception as e:
-        #    print("[Server] Error serializing global weights:", e)
-            
-        for client_conn in clients:
-            # 
-            sent_size = send_data(client_conn, global_weights)
-            round_sent += sent_size
-            comm_stats['total_sent'] += sent_size
+        threads = []
+        for idx, client_conn in enumerate(clients):
+            t = threading.Thread(target=handle_client_communication, args=(client_conn, global_weights, updates, updates_lock, comm_stats, idx))
+            t.start()
+            threads.append(t)
 
-            # Receive encrypted update (list of serialized CKKSVectors for each weight)
-            client_encrypted_update, received_size = receive_data(client_conn)
-            if client_encrypted_update is not None:
-                updates.append(client_encrypted_update)
-                round_received += received_size
-                comm_stats['total_received'] += received_size
+        for t in threads:
+            t.join()
 
-        comm_stats['sent_per_round'].append(round_sent)
-        comm_stats['received_per_round'].append(round_received)
+        comm_stats['sent_per_round'].append(comm_stats['total_sent'])
+        comm_stats['received_per_round'].append(comm_stats['total_received'])
 
         #Homomorphic Aggregation 
         if updates:
