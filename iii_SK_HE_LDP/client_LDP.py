@@ -30,14 +30,31 @@ def load_layer_sensitivities(csv_path):
 
     for round_num, group in df.groupby('round'):
         round_to_layer_sens[int(round_num)] = {
-            int(row['layer_index']): row['avg_diffs'] for _, row in group.iterrows()
+            int(row['layer_index']): (row['avg_diffs']) for _, row in group.iterrows()
         }
-
     return round_to_layer_sens
-
 layer_sensitivity_dict = load_layer_sensitivities("layer_update_avgs_1.csv")
 
-
+# Define a helper function or mapping for dynamic threshold:
+def get_dynamic_threshold(round_num):
+    # Example mapping: you can fill in with your own values.
+    thresholds = {
+        1: 100000000+3*244000000,
+        2: 61000000+3*136000000,
+        3: 45000000+3*1140000000,
+        4: 37000000+3*93000000,
+        5: 30000000+3*75000000,
+        6: 30000000+3*75000000,
+        7: 30000000+3*75000000,
+        8: 25000000+3*65000000,
+        9: 22000000+3*60000000,
+        # From round 10 onward, threshold remains constant:
+    }
+    if round_num in thresholds:
+        return thresholds[round_num]
+    else:
+        return 22000000+3*60000000  # This is the threshold for round 10 onward
+    
 # Function to sample CPU usage during training
 def sample_cpu_usage(stop_event, cpu_usage_list):
     """
@@ -74,13 +91,17 @@ def encrypt_weights(weights, ts_context):
         enc_weight = ts.ckks_vector(ts_context, flat_weight)
         encrypted_weights.append(enc_weight.serialize())
     return encrypted_weights
-        
-def clip_weight_update(old, new, threshold):
+
+
+
+def clip_weight_update(old, new, round_num):
+    threshold = get_dynamic_threshold(round_num)
     update = new - old
     norm = np.linalg.norm(update)
     if norm > threshold:
         update = update * (threshold / norm)
     return old + update
+
 
 def log_weight_update_stats(round_number, norms, stds, shapes, csv_path="layer_update_avgs.csv"):
     if args.client_id == 0:
@@ -106,9 +127,9 @@ def add_dp_noise(weights, epsilon, round_sensitivities, round_num, num_clients, 
         sensitivity = round_sensitivities.get(round_num, {}).get(i, 1e-5)  # default to a small value
         noise_scale = sensitivity / (epsilon * np.sqrt(num_clients))
 
-        print(f"\n-- Layer {i} --")
-        print(f"Sensitivity: {sensitivity:.4f}")
-        print(f"Noise Scale: {noise_scale:.4f}")
+        #print(f"\n-- Layer {i} --")
+        #print(f"Sensitivity: {sensitivity:.4f}")
+        #print(f"Noise Scale: {noise_scale:.4f}")
 
         if noise_type == 'laplace':
             noise = np.random.laplace(loc=0.0, scale=noise_scale, size=weight.shape)
@@ -120,7 +141,7 @@ def add_dp_noise(weights, epsilon, round_sensitivities, round_num, num_clients, 
         noisy_weight = weight + noise
         noisy_weights.append(noisy_weight)
 
-    print("=== End of Noise Injection ===\n")
+    #print("=== End of Noise Injection ===\n")
     return noisy_weights
 
 
@@ -128,7 +149,7 @@ def add_dp_noise(weights, epsilon, round_sensitivities, round_num, num_clients, 
 # Client Class
 class Client:
     def __init__(self, X_train, y_train, X_val, y_val,
-                 dp_epsilon=5.0, num_clients=2, dp_noise_type='laplace'):
+                 dp_epsilon=3.0, num_clients=2, dp_noise_type='laplace'):
         # Pass max_gradient to CNN on creation
         self.model = CNN()
         self.model.set_initial_params()
@@ -203,21 +224,19 @@ class Client:
         sample_y = self.y_train[:32]
 
         self.current_round += 1
-        # Dynamically set the threshold based on the current round.
-        #self.update_threshold = get_dynamic_threshold(self.current_round)
-        # Compute gradient norm statistics on a sample batch
-        #avg_grad_norm, std_grad_norm = self.model.compute_gradient_norm_stats(sample_x, sample_y)
-        #print(f"Average gradient norm for this round: {avg_grad_norm:.4f}, Standard deviation: {std_grad_norm:.4f}")
+
         plain_weights = self.model.get_weights()
         # Compute weight update norms: difference between new weights and global weights
         avg_diffs, stds, shapes = self.model.compute_weight_update_norm_stats(global_weights, plain_weights)
         log_weight_update_stats(self.current_round, avg_diffs, stds, shapes)
   
-        # Clip each weight update (difference between new weights and global weights)
+        # Clip each weight update (difference between new weights and global weights), 
+        # based off emprical caclutions of weight update norm per round
         clipped_weights = []
-        for old_weight, new_weight in zip(global_weights, plain_weights):
-            clipped_weight = new_weight #old_weight #clip_weight_update(old_weight, new_weight, self.update_threshold)
+        for i, (old_weight, new_weight) in enumerate(zip(global_weights, plain_weights)):
+            clipped_weight = clip_weight_update(old_weight, new_weight, self.current_round)
             clipped_weights.append(clipped_weight)
+
             
         # Include gradient stats in the round metrics dictionary
         round_stats = {
@@ -230,10 +249,6 @@ class Client:
             'avg_avail': avg_avail,
             'peak_avail': peak_avail,
             'min_avail': min_avail,
-            #'avg_grad_norm': avg_grad_norm,
-            #'std_grad_norm': std_grad_norm,
-            #'avg_weight_update_norm': avg_update_norm,
-            #'std_weight_update_norm': std_update_norm
         }
         self.round_metrics.append(round_stats)
         
@@ -311,36 +326,7 @@ class Client:
         print(f"  Average per round Peak: {avg_peak_avail:.2f} MB")
         print(f"  Average per round Min: {avg_min_avail:.2f} MB")
         print("==== End of Report ====")
-        
-        # # Print gradient update norms per round
-        # print("\n==== Gradient Update Norms per Round ====")
-        # for i, metrics in enumerate(self.round_metrics, start=1):
-        #    print(f"Round {i}: Average gradient norm: {metrics['avg_grad_norm']:.4f}, Standard deviation: {metrics['std_grad_norm']:.4f}")
-        # Gather per-round average gradient norms
-        #grad_means = [r['avg_grad_norm'] for r in self.round_metrics]
-        #overall_avg_grad = sum(grad_means) / n
-        # Compute the standard deviation of the average gradient norms across rounds
-        #overall_std_grad = np.std(grad_means)
-        
-        #print("Gradient Update Norms:")
-        #print(f"  Average across rounds: {overall_avg_grad:.4f}")
-        #print(f"  Standard Deviation across rounds: {overall_std_grad:.4f}")
-        #print("==== End of Report ====")
-        
-        n = len(self.round_metrics)
-        # Collect per-round weight update norms.
-        #update_avgs = [r['avg_weight_update_norm'] for r in self.round_metrics]
-       # update_stds = [r['std_weight_update_norm'] for r in self.round_metrics]
-        
-       # overall_avg_update = np.mean(update_avgs)
-       # overall_std_update = np.std(update_avgs)
-       # print("Per-Round Weight Update Norms:")
-       # for i, r in enumerate(self.round_metrics, start=1):
-       #     print(f"  Round {i}: Average = {r['avg_weight_update_norm']:.4f}, Std Dev = {r['std_weight_update_norm']:.4f}")
-        
-        #print("\nOverall Weight Update Norms Across Rounds:")
-        #print(f"  Average of averages: {overall_avg_update:.4f}")
-       # print(f"  Standard deviation across rounds: {overall_std_update:.4f}")
+
 
 
 # Socket Helper Functions
