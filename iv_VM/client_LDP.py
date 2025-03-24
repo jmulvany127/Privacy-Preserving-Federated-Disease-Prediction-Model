@@ -379,7 +379,7 @@ def recvall(sock, n):
 
 # Client Setup
 parser = argparse.ArgumentParser()
-parser.add_argument('--client_id', type=int, required=True, choices=[0, 1], help="Client ID (0, 1)")
+parser.add_argument('--client_id', type=int, required=True, choices=[0, 1,2,3,4,5,6,7,8,9])
 parser.add_argument('--dp_epsilon', type=float, default=2.0,
                     help="Privacy budget epsilon for local differential privacy")
 parser.add_argument('--num_clients', type=int, default=2,
