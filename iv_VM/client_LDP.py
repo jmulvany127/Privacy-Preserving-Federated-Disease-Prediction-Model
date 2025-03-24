@@ -388,24 +388,30 @@ parser.add_argument('--dp_noise_type', type=str, default='laplace', choices=['la
                     help="Type of noise to use for DP")
 args = parser.parse_args()
 
-# Load and split data
-X, y = load_raw_covid_data(limit=1000)
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, stratify=y, random_state=42)
-X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.1, stratify=y_train, random_state=42)
 
-# Split into client-specific data (2 equal parts)
-X1, X2, y1, y2 = train_test_split(X_train, y_train, test_size=0.5, stratify=y_train, random_state=42)
-X1_val, X2_val, y1_val, y2_val = train_test_split(X_val, y_val, test_size=0.5, stratify=y_val, random_state=42)
+client_data, _ = load_raw_covid_data_for_federated(num_clients=args.num_clients)
+client_files = client_data[args.client_id]
+X_all, y_all = load_images_from_paths(client_files)
 
-# Assign dataset to the correct client
-if args.client_id == 0:
-    X_client, y_client = X1, y1
-    X_val_client, y_val_client = X1_val, y1_val
-elif args.client_id == 1:
-    X_client, y_client = X2, y2
-    X_val_client, y_val_client = X2_val, y2_val
+# Count label distribution
+covid_count = int(np.sum(y_all))
+noncovid_count = len(y_all) - covid_count
 
-client = Client(X_client, y_client, X_val_client, y_val_client,
+print(f"\n Client {args.client_id} Data Summary")
+print(f"  Total samples: {len(y_all)}")
+print(f"  COVID samples: {covid_count}")
+print(f"  Non-COVID samples: {noncovid_count}")
+
+# Split into train/val
+X_train, X_val, y_train, y_val = train_test_split(
+    X_all, y_all, test_size=0.1, stratify=y_all, random_state=42
+)
+
+print(f"  Training samples: {len(y_train)}")
+print(f"    ↳ COVID: {int(np.sum(y_train))}, Non-COVID: {len(y_train) - int(np.sum(y_train))}")
+print(f"  Validation samples: {len(y_val)}")
+print(f"    ↳ COVID: {int(np.sum(y_val))}, Non-COVID: {len(y_val) - int(np.sum(y_val))}")
+client = Client(X_train, y_train, X_val,  y_val,
                 dp_epsilon=args.dp_epsilon,
                 num_clients=args.num_clients,
                 dp_noise_type=args.dp_noise_type)
