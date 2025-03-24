@@ -29,7 +29,7 @@ def load_raw_covid_data(limit=2000):
         for i, f in enumerate(images):
             full_path = os.path.join(path, f)
             try:
-                print(f"Reading: {full_path}")
+                #print(f"Reading: {full_path}")
                 img_data = img.imread(full_path)
                 data[i] = resize(img_data, (128, 128, 1), anti_aliasing=True)
             except Exception as e:
