@@ -1,21 +1,18 @@
 #!/bin/bash
 
-# Start the server
-echo "Starting server..."
-python3 server_LDP.py &
-SERVER_PID=$!
+# Start the server in a tmux session
+tmux new-session -d -s server 'python3 server_LDP.py'
 
 # Wait for the server to initialize
-echo "Waiting for server to be ready..."
+echo "Server started. Waiting for 15 seconds..."
 sleep 15
 
-# Start Client 0 in a new terminal
-echo "Starting client 0..."
-gnome-terminal -- bash -c "python3 client_LDP.py --client_id 0; exec bash"
+# Start client 0 in a new tmux session
+tmux new-session -d -s client0 'python3 client_LDP.py --client_id 0'
 
-# Start Client 1 in a new terminal
-echo "Starting client 1..."
-gnome-terminal -- bash -c "python3 client_LDP.py --client_id 1; exec bash"
+# Start client 1 in a new tmux session
+tmux new-session -d -s client1 'python3 client_LDP.py --client_id 1'
 
-# Optionally: wait for the server to finish (press Ctrl+C to kill manually)
-wait $SERVER_PID
+echo "✅ All processes started in tmux sessions:"
+echo "   - server"
+echo "   - client
