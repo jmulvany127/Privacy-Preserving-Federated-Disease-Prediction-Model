@@ -20,18 +20,25 @@ def load_raw_covid_data(limit=2000):
     non_covid_path = os.path.join(base_dir, "data", "noncovid")
 
     # Define limits based on the ratio
-    covid_limit = int(0.5 * limit)  # 3/4 of the total limit
-    non_covid_limit = limit - covid_limit  # 1/4 of the total limit
-
+    covid_limit = int(0.5 * limit)  
+    non_covid_limit = limit - covid_limit  #
     def process_images(path, limit):
         images = [f for f in os.listdir(path) if f.endswith('.png')][:limit]
         data = np.empty((len(images), 128, 128, 1), dtype=np.float32)
-        for i, f in enumerate(images):
-            #print(f)
-            img_data = img.imread(os.path.join(path, f))
 
-            data[i] = resize(img_data, (128, 128, 1), anti_aliasing=True)
+        for i, f in enumerate(images):
+            full_path = os.path.join(path, f)
+            try:
+                print(f"Reading: {full_path}")
+                img_data = img.imread(full_path)
+                data[i] = resize(img_data, (128, 128, 1), anti_aliasing=True)
+            except Exception as e:
+                print(f"❌ Error reading file: {full_path}")
+                print(f"   ↳ {type(e).__name__}: {e}")
+                continue  # or continue if you want to skip bad files
+
         return data
+
 
     # Load images based on the new limits
     covid_images = process_images(covid_path, covid_limit)
