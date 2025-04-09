@@ -37,7 +37,7 @@ layer_sensitivity_dict = load_layer_sensitivities("layer_update_avgs_1.csv")
 
 # Define a helper function or mapping for dynamic threshold:
 def get_dynamic_threshold(round_num):
-    # Example mapping: you can fill in with your own values.
+
     thresholds = {
         1: 100000000+3*244000000,
         2: 61000000+3*136000000,
@@ -219,10 +219,7 @@ class Client:
             min_avail = min(mem_avail_list)
         else:
             avg_avail = peak_avail = min_avail = 0.0
-            
-        sample_x = self.X_train[:32]
-        sample_y = self.y_train[:32]
-
+ 
         self.current_round += 1
 
         plain_weights = self.model.get_weights()

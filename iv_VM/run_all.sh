@@ -1,6 +1,6 @@
 #!/bin/bash
 
-NUM_CLIENTS=4
+NUM_CLIENTS=2
 
 # Start the server with the correct number of clients
 echo "Starting server with $NUM_CLIENTS clients..."
@@ -16,10 +16,10 @@ for ((i=0; i<$NUM_CLIENTS; i++)); do
     nohup python3 client_LDP.py --client_id $i --num_clients $NUM_CLIENTS > client$i.log 2>&1 &
 done
 
-echo "✅ All processes started using nohup."
+echo " All processes started using nohup."
 
 echo ""
-echo "👉 Use these to view logs:"
+echo " Use these to view logs:"
 echo "   tail -f server.log"
 for ((i=0; i<$NUM_CLIENTS; i++)); do
     echo "   tail -f client$i.log"
