@@ -11,18 +11,18 @@ from matplotlib import image as img
 from CNN import *
 from utils import *
 import warnings
-
-
 import csv
-
 import psutil
 import tracemalloc
 import gc
 import time
 import threading  # For sampling threads
-
 import tenseal as ts
 import pandas as pd
+from datetime import datetime
+
+
+
 
 def load_layer_sensitivities(csv_path):
     df = pd.read_csv(csv_path)
@@ -254,7 +254,16 @@ class Client:
         print(f"  Memory Usage - Avg: {avg_mem:.2f} MB, Peak: {peak_mem:.2f} MB, Min: {min_mem:.2f} MB")
         print(f"  Available Memory - Avg: {avg_avail:.2f} MB, Peak: {peak_avail:.2f} MB, Min: {min_avail:.2f} MB")
 
-        
+        # Log to CSV
+        with open(client_log_path, mode='a', newline='') as f:
+            writer = csv.writer(f)
+            writer.writerow([
+                self.current_round,
+                avg_cpu, peak_cpu, min_cpu,
+                avg_mem, peak_mem, min_mem,
+                avg_avail, peak_avail, min_avail
+            ])
+
 
         noisy_weights = add_dp_noise(
             clipped_weights,
@@ -384,6 +393,22 @@ parser.add_argument('--num_clients', type=int, default=2,
 parser.add_argument('--dp_noise_type', type=str, default='laplace', choices=['laplace', 'gaussian'],
                     help="Type of noise to use for DP")
 args = parser.parse_args()
+
+# Create unique evaluation folder with subfolder for each client
+timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+log_dir = os.path.join("evaluation_logs", f"log_{timestamp}", f"client_{args.client_id}")
+os.makedirs(log_dir, exist_ok=True)
+
+# Path to CSV log file
+client_log_path = os.path.join(log_dir, "metrics_log.csv")
+with open(client_log_path, mode='w', newline='') as f:
+    writer = csv.writer(f)
+    writer.writerow([
+        "Round",
+        "Avg CPU (%)", "Peak CPU (%)", "Min CPU (%)",
+        "Avg Memory (MB)", "Peak Memory (MB)", "Min Memory (MB)",
+        "Avg Avail Mem (MB)", "Peak Avail Mem (MB)", "Min Avail Mem (MB)"
+    ])
 
 
 client_data, _ = load_raw_covid_data_for_federated(num_clients=args.num_clients)

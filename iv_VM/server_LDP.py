@@ -11,13 +11,31 @@ from skimage.transform import resize
 from sklearn.metrics import confusion_matrix, classification_report, accuracy_score, f1_score
 from CNN import *
 from utils import *
-
+import csv
+import os
+from datetime import datetime
 import psutil
 import threading
-
 import tenseal as ts
-
 import argparse
+from datetime import datetime
+import os
+import csv
+
+# Create a new evaluation log folder with a timestamp
+timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+log_dir = os.path.join("evaluation_logs", f"log_{timestamp}")
+os.makedirs(log_dir, exist_ok=True)
+
+# CSV file for server logging
+server_log_path = os.path.join(log_dir, "server_log.csv")
+with open(server_log_path, mode='w', newline='') as f:
+    writer = csv.writer(f)
+    writer.writerow([
+        "Round", "Accuracy", "F1 Score", "Round Duration (s)",
+        "Confusion Matrix", "Precision", "Recall", "Support"
+    ])
+
 
 # --- Parse CLI arguments ---
 parser = argparse.ArgumentParser(description="Federated Server")
@@ -25,6 +43,21 @@ parser.add_argument('--num_clients', type=int, default=2, help='Number of federa
 args = parser.parse_args()
 
 NUM_CLIENTS = args.num_clients
+
+def log_server_round(round_num, acc, f1, duration, conf_matrix, report_dict):
+    with open(server_log_path, mode='a', newline='') as f:
+        writer = csv.writer(f)
+        writer.writerow([
+            round_num,
+            round(acc, 4),
+            round(f1, 4),
+            round(duration, 2),
+            conf_matrix.flatten().tolist(),
+            round(report_dict["weighted avg"]["precision"], 4),
+            round(report_dict["weighted avg"]["recall"], 4),
+            report_dict["weighted avg"]["support"]
+        ])
+
 
 # Function to handle communication with each client during one round
 def handle_client_communication(client_conn, global_weights, updates_list, updates_lock, comm_stats, index):
@@ -161,9 +194,9 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         # Send the serialized TenSEAL context to the client.
         send_data(conn, serialized_context)
 
-    for round in range(1, rounds + 1):
+    for round_num in range(1, rounds + 1):
         start_time = time.time()
-        print(f"\n--- Round {round}/{rounds} ---")
+        print(f"\n--- Round {round_num}/{rounds} ---")
         updates = []
         updates_lock = threading.Lock()
         round_sent = 0
@@ -195,6 +228,9 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 
         comm_stats['sent_per_round'].append(comm_stats['total_sent'])
         comm_stats['received_per_round'].append(comm_stats['total_received'])
+        
+
+
 
         #Homomorphic Aggregation 
         if updates:
@@ -222,8 +258,8 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         conf_matrix = confusion_matrix(y_test, y_pred)
         class_report = classification_report(y_test, y_pred, digits=4)
         f1 = f1_score(y_test, y_pred, average='weighted')  # <-- Compute F1 score
-
-        print(f"Round {round} - Accuracy: {acc*100:.2f}%")
+        
+        print(f"Round {round_num} - Accuracy: {acc*100:.2f}%")
         print(f"F1 Score: {f1:.4f}")  # <-- Display F1 score
         print("Confusion Matrix:")
         print(conf_matrix)
@@ -280,7 +316,13 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         end_time = time.time()
         round_duration = end_time - start_time
         round_times.append(round_duration)
-        print(f"Round {round} duration: {round_duration:.2f} seconds")
+        
+        # Parse classification report to dictionary
+        report_dict = classification_report(y_test, y_pred, output_dict=True)
+        # Log to CSV
+        log_server_round(round_num, acc, f1, round_duration, conf_matrix, report_dict)
+        
+        print(f"Round {round_num} duration: {round_duration:.2f} seconds")
 
     # Final Reporting (this section will run regardless of early stopping)
     total_time = sum(round_times)
@@ -354,4 +396,26 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     # Close client connections
     for conn in clients:
         conn.close()
+        
+    # Timing report
+    with open(os.path.join(log_dir, "timing_report.txt"), 'w') as f:
+        f.write(f"Total training time: {sum(round_times):.2f} seconds\n")
+        f.write(f"Avg time per round: {sum(round_times)/len(round_times):.2f} seconds\n")
+        for i, rt in enumerate(round_times):
+            f.write(f"Round {i+1}: {rt:.2f} seconds\n")
+
+    # Communication report
+    with open(os.path.join(log_dir, "communication_overhead.txt"), 'w') as f:
+        f.write(f"Total bytes sent: {comm_stats['total_sent']}\n")
+        f.write(f"Total bytes received: {comm_stats['total_received']}\n")
+        f.write(f"Sent per round: {comm_stats['sent_per_round']}\n")
+        f.write(f"Received per round: {comm_stats['received_per_round']}\n")
+
+    # Resource usage report
+    with open(os.path.join(log_dir, "resource_usage.txt"), 'w') as f:
+        for i, res in enumerate(resource_metrics, 1):
+            f.write(f"Round {i}:\n")
+            for k, v in res.items():
+                f.write(f"  {k}: {v:.2f}\n")
+
     print("\nTraining complete.")
