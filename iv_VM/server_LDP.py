@@ -24,7 +24,7 @@ import csv
 
 # Create a new evaluation log folder with a timestamp
 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-log_dir = os.path.join("evaluation_logs", f"log_{timestamp}")
+log_dir = os.path.join("evaluation_logs", f"log_server_{timestamp}")
 os.makedirs(log_dir, exist_ok=True)
 
 # CSV file for server logging
@@ -71,13 +71,7 @@ def handle_client_communication(client_conn, global_weights, updates_list, updat
         comm_stats['total_received'] += received_size
 # --- Resource Sampling Functions for the Server ---
 
-def sample_cpu_usage(stop_event, cpu_usage_list):
-    """
-    Polls CPU usage every second and appends the value to cpu_usage_list until stop_event is set.
-    """
-    while not stop_event.is_set():
-        usage = psutil.cpu_percent(interval=1)
-        cpu_usage_list.append(usage)
+
 
 def sample_memory_usage(stop_event, mem_usage_list, mem_avail_list):
     """
@@ -266,11 +260,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         print("Classification Report:")
         print(class_report)
 
-        # *** Early Stopping Check Based on F1 Score ***
-        if f1 >= F1_THRESHOLD:
-            print(f"\n*** F1 threshold reached: {f1:.4f} >= {F1_THRESHOLD}. Stopping training early. ***")
-            # Optionally, you could notify the clients here if needed.
-            break  # Exit the training rounds loop
+
 
         # Stop resource sampling for this round
         cpu_stop_event.set()
@@ -321,6 +311,11 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         report_dict = classification_report(y_test, y_pred, output_dict=True)
         # Log to CSV
         log_server_round(round_num, acc, f1, round_duration, conf_matrix, report_dict)
+                # *** Early Stopping Check Based on F1 Score ***
+        if f1 >= F1_THRESHOLD:
+            print(f"\n*** F1 threshold reached: {f1:.4f} >= {F1_THRESHOLD}. Stopping training early. ***")
+            # Optionally, you could notify the clients here if needed.
+            break  # Exit the training rounds loop
         
         print(f"Round {round_num} duration: {round_duration:.2f} seconds")
 

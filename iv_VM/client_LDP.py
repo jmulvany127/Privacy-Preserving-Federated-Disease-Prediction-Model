@@ -55,16 +55,18 @@ def get_dynamic_threshold(round_num):
     else:
         return 22000000+3*60000000  # This is the threshold for round 10 onward
     
-# Function to sample CPU usage during training
 def sample_cpu_usage(stop_event, cpu_usage_list):
     """
-    Polls CPU usage every second and appends the value to cpu_usage_list
-    until stop_event is set.
+    Polls the CPU usage of the current process every second and appends it to cpu_usage_list.
     """
+    process = psutil.Process(os.getpid())
+    # Initial call to create a baseline (psutil needs two calls to calculate %)
+    process.cpu_percent(interval=None)
+
     while not stop_event.is_set():
-        # This call waits for 1 second and returns the CPU usage percentage.
-        usage = psutil.cpu_percent(interval=1)
+        usage = process.cpu_percent(interval=1)  # % of a single CPU core
         cpu_usage_list.append(usage)
+
 
 # Function to sample Memory usage and available memory during training
 def sample_memory_usage(stop_event, mem_usage_list, mem_avail_list):
@@ -149,7 +151,7 @@ def add_dp_noise(weights, epsilon, round_sensitivities, round_num, num_clients, 
 # Client Class
 class Client:
     def __init__(self, X_train, y_train, X_val, y_val,
-                 dp_epsilon=3.0, num_clients=2, dp_noise_type='laplace'):
+                 dp_epsilon, num_clients=2, dp_noise_type='gaussian'):
         # Pass max_gradient to CNN on creation
         self.model = CNN()
         self.model.set_initial_params()
@@ -386,11 +388,11 @@ def recvall(sock, n):
 # Client Setup
 parser = argparse.ArgumentParser()
 parser.add_argument('--client_id', type=int, required=True, choices=[0, 1,2,3,4,5,6,7,8,9])
-parser.add_argument('--dp_epsilon', type=float, default=2.0,
+parser.add_argument('--dp_epsilon', type=float, default=3.0,
                     help="Privacy budget epsilon for local differential privacy")
 parser.add_argument('--num_clients', type=int, default=2,
                     help="Total number of clients in the system")
-parser.add_argument('--dp_noise_type', type=str, default='laplace', choices=['laplace', 'gaussian'],
+parser.add_argument('--dp_noise_type', type=str, default='gaussian', choices=['laplace', 'gaussian'],
                     help="Type of noise to use for DP")
 args = parser.parse_args()
 

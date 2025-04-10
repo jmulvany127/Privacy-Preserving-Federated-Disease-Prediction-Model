@@ -13,6 +13,9 @@ import numpy as np
 from matplotlib import image as img
 from skimage.transform import resize
 
+import time
+import psutil
+
 def load_raw_covid_data_for_federated(
     num_clients=2,
     val_split=0.1,
@@ -75,9 +78,6 @@ def load_raw_covid_data_for_federated(
 
     return client_data, (test_files, test_labels)
 
-
-         
-
 def load_images_from_paths(image_label_pairs):
     data = []
     labels = []
@@ -88,7 +88,39 @@ def load_images_from_paths(image_label_pairs):
             data.append(img_data)
             labels.append(label)
         except Exception as e:
-            print(f"❌ Error reading file: {path} ({e})")
+            print(f" Error reading file: {path} ({e})")
             continue
     return np.array(data, dtype=np.float32), np.array(labels, dtype=np.float32)
+
+
+def sample_cpu_usage(stop_event, cpu_usage_list):
+    """
+    Polls the CPU usage of the current process every second, normalizes it to 0–100% 
+    of total CPU capacity, and appends it to cpu_usage_list.
+    """
+    process = psutil.Process(os.getpid())
+    num_cores = psutil.cpu_count(logical=True)  # Total logical CPUs
+
+    # Initial call to establish a baseline for % calculation
+    process.cpu_percent(interval=None)
+
+    while not stop_event.is_set():
+        raw_usage = process.cpu_percent(interval=1)  # May be >100% if using multiple cores
+        normalized_usage = raw_usage / num_cores  # Normalize to total system capacity
+        cpu_usage_list.append(normalized_usage)
+
+
+def sample_memory_usage(stop_event, mem_usage_list, mem_avail_list):
+    """
+    Polls the process's memory usage and the system's available memory every second,
+    appending the values (in MB) to mem_usage_list and mem_avail_list respectively,
+    until stop_event is set.
+    """
+    process = psutil.Process(os.getpid())
+    while not stop_event.is_set():
+        mem_usage = process.memory_info().rss / (1024 * 1024)
+        mem_avail = psutil.virtual_memory().available / (1024 * 1024)
+        mem_usage_list.append(mem_usage)
+        mem_avail_list.append(mem_avail)
+        time.sleep(1)
 

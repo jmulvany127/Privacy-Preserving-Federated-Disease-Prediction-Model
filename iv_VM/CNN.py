@@ -43,7 +43,7 @@ class CNN:
             tf.keras.layers.Dense(2, activation='softmax')
         ])
         
-        self.class_weight = {0: 1, 1: 3}
+        
         
         # Use Adam optimizer with gradient clipping.
         # The clipnorm parameter ensures that the gradient norm does not exceed self.max_gradient.
@@ -99,7 +99,7 @@ class CNN:
             X_train, y_train,
             validation_data=(X_val, y_val),
             epochs=epochs,
-            class_weight=self.class_weight,
+            #class_weight=self.class_weight,
             # workers=workers,
             callbacks=[time_callback]
         )
