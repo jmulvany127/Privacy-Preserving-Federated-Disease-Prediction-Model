@@ -55,17 +55,6 @@ def get_dynamic_threshold(round_num):
     else:
         return 22000000+3*60000000  # This is the threshold for round 10 onward
     
-def sample_cpu_usage(stop_event, cpu_usage_list):
-    """
-    Polls the CPU usage of the current process every second and appends it to cpu_usage_list.
-    """
-    process = psutil.Process(os.getpid())
-    # Initial call to create a baseline (psutil needs two calls to calculate %)
-    process.cpu_percent(interval=None)
-
-    while not stop_event.is_set():
-        usage = process.cpu_percent(interval=1)  # % of a single CPU core
-        cpu_usage_list.append(usage)
 
 
 # Function to sample Memory usage and available memory during training
@@ -398,7 +387,7 @@ args = parser.parse_args()
 
 # Create unique evaluation folder with subfolder for each client
 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-log_dir = os.path.join("evaluation_logs", f"log_{timestamp}", f"client_{args.client_id}")
+log_dir = os.path.join("evaluation_logs", f"log_clients_{timestamp}", f"client_{args.client_id}")
 os.makedirs(log_dir, exist_ok=True)
 
 # Path to CSV log file
