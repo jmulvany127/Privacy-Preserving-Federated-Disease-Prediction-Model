@@ -22,9 +22,33 @@ from datetime import datetime
 import os
 import csv
 
+
+
+
+
+    
+
+
+# --- Parse CLI arguments ---
+parser = argparse.ArgumentParser(description="Federated Server")
+parser.add_argument('--num_clients', type=int, default=2, help='Number of federated clients')
+parser.add_argument('--use_he', type=str2bool, default=True, help='Toggle homomorphic encryption (default: True)')
+parser.add_argument('--experiment_name', type=str, default=None,
+                    help='Optional name of the experiment (used to group logs)')
+
+args = parser.parse_args()
+
+
+
 # Create a new evaluation log folder with a timestamp
 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-log_dir = os.path.join("evaluation_logs", f"log_server_{timestamp}")
+
+if args.experiment_name:
+    base_log_dir = os.path.join("evaluation_logs", args.experiment_name)
+    log_dir = os.path.join(base_log_dir, f"log_server_{timestamp}")
+else:
+    log_dir = os.path.join("evaluation_logs", f"log_server_{timestamp}")
+    
 os.makedirs(log_dir, exist_ok=True)
 
 # CSV file for server logging
@@ -36,14 +60,7 @@ with open(server_log_path, mode='w', newline='') as f:
         "Confusion Matrix", "Precision", "Recall", "Support"
     ])
     
-
-
-# --- Parse CLI arguments ---
-parser = argparse.ArgumentParser(description="Federated Server")
-parser.add_argument('--num_clients', type=int, default=2, help='Number of federated clients')
-parser.add_argument('--use_he', type=str2bool, default=True, help='Toggle homomorphic encryption (default: True)')
-args = parser.parse_args()
-
+    
 NUM_CLIENTS = args.num_clients
 USE_HE = args.use_he
 

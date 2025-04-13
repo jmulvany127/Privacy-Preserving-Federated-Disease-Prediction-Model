@@ -397,6 +397,8 @@ def str2bool(v):
 
 # Client Setup
 parser = argparse.ArgumentParser()
+parser.add_argument('--experiment_name', type=str, default=None,
+                    help="Optional name of the experiment (used to group logs)")
 parser.add_argument('--use_dp', type=str2bool, default=True,
                     help="Toggle differential privacy noise addition (default: True)")
 parser.add_argument('--use_he', type=str2bool, default=True,
@@ -412,8 +414,15 @@ args = parser.parse_args()
 
 # Create unique evaluation folder with subfolder for each client
 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-log_dir = os.path.join("evaluation_logs", f"log_clients_{timestamp}", f"client_{args.client_id}")
+if args.experiment_name:
+    base_log_dir = os.path.join("evaluation_logs", args.experiment_name)
+    os.makedirs(base_log_dir, exist_ok=True)
+    log_dir = os.path.join(base_log_dir, f"log_clients_{timestamp}", f"client_{args.client_id}")
+else:
+    log_dir = os.path.join("evaluation_logs", f"log_clients_{timestamp}", f"client_{args.client_id}")
+
 os.makedirs(log_dir, exist_ok=True)
+
 # === Metadata Logging (Only for Client 0) ===
 if args.client_id == 0:
     meta_path = os.path.join(log_dir, "client_metadata.txt")
