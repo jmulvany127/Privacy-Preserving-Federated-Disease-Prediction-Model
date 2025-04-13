@@ -40,7 +40,11 @@ with open(server_log_path, mode='w', newline='') as f:
 # --- Parse CLI arguments ---
 parser = argparse.ArgumentParser(description="Federated Server")
 parser.add_argument('--num_clients', type=int, default=2, help='Number of federated clients')
+parser.add_argument('--use_he', type=str2bool, default=True, help='Toggle homomorphic encryption (default: True)')
 args = parser.parse_args()
+
+NUM_CLIENTS = args.num_clients
+USE_HE = args.use_he
 
 NUM_CLIENTS = args.num_clients
 
@@ -133,20 +137,24 @@ def recvall(sock, n):
     return data
 
 # --- Initialize TenSEAL Context on the Server ---
-poly_modulus_degree = 8192
-coeff_mod_bit_sizes = [60, 40, 40, 60]
-global_scale = 2 ** 40
+if USE_HE:
+    poly_modulus_degree = 8192
+    coeff_mod_bit_sizes = [60, 40, 40, 60]
+    global_scale = 2 ** 40
 
-ts_context = ts.context(
-    ts.SCHEME_TYPE.CKKS,
-    poly_modulus_degree=poly_modulus_degree,
-    coeff_mod_bit_sizes=coeff_mod_bit_sizes
-)
-ts_context.global_scale = global_scale
-ts_context.generate_galois_keys()
+    ts_context = ts.context(
+        ts.SCHEME_TYPE.CKKS,
+        poly_modulus_degree=poly_modulus_degree,
+        coeff_mod_bit_sizes=coeff_mod_bit_sizes
+    )
+    ts_context.global_scale = global_scale
+    ts_context.generate_galois_keys()
 
-# Serialize context without secret key (public parameters only)
-serialized_context = ts_context.serialize(save_secret_key=False)
+    serialized_context = ts_context.serialize(save_secret_key=False)
+else:
+    ts_context = None
+    serialized_context = None
+
 
 
 # --- Server Setup ---
@@ -185,8 +193,9 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         conn, addr = s.accept()
         clients.append(conn)
         print(f"Connected to {addr}")
-        # Send the serialized TenSEAL context to the client.
-        send_data(conn, serialized_context)
+        if USE_HE:
+            send_data(conn, serialized_context)
+
 
     for round_num in range(1, rounds + 1):
         start_time = time.time()
@@ -227,23 +236,29 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 
 
         #Homomorphic Aggregation 
+        # Aggregation logic
         if updates:
             aggregated_weights = []
             num_clients = len(updates)
-            for idx in range(len(updates[0])):  # for each weight parameter
-                # Deserialize the first client's encrypted weight.
-                agg_enc = ts.ckks_vector_from(ts_context, updates[0][idx])
-                for client_upd in updates[1:]:
-                    enc_vector = ts.ckks_vector_from(ts_context, client_upd[idx])
-                    agg_enc += enc_vector
-                # Average the aggregated encrypted weight.
-                agg_enc = agg_enc * (1.0 / num_clients)
-                # Decrypt the aggregated vector.
-                decrypted_flat = agg_enc.decrypt()
-                original_shape = global_weights[idx].shape
-                decrypted_flat = np.array(decrypted_flat[:np.prod(original_shape)])
-                aggregated_weights.append(decrypted_flat.reshape(original_shape))
+
+            if USE_HE:
+                for idx in range(len(updates[0])):  # For each layer
+                    agg = ts.ckks_vector_from(ts_context, updates[0][idx])
+                    for client_upd in updates[1:]:
+                        agg += ts.ckks_vector_from(ts_context, client_upd[idx])
+                    agg *= (1.0 / num_clients)
+                    decrypted_flat = agg.decrypt()
+
+                    original_shape = global_weights[idx].shape
+                    decrypted_flat = np.array(decrypted_flat[:np.prod(original_shape)])
+                    aggregated_weights.append(decrypted_flat.reshape(original_shape))
+            else:
+                # Simple average over all client updates (already in NumPy)
+                aggregated_weights = [np.mean(layer_weights, axis=0) for layer_weights in zip(*updates)]
+
             global_model.set_weights(aggregated_weights)
+
+
 
         # Evaluate global model
         y_pred_probs = global_model.predict(X_test)

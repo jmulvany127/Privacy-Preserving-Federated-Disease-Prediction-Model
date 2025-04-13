@@ -140,7 +140,9 @@ def add_dp_noise(weights, epsilon, round_sensitivities, round_num, num_clients, 
 # Client Class
 class Client:
     def __init__(self, X_train, y_train, X_val, y_val,
-                 dp_epsilon, num_clients=2, dp_noise_type='gaussian', use_dp=True):
+                 dp_epsilon, num_clients=2, dp_noise_type='gaussian',
+                 use_dp=True, use_he=True):
+        self.use_he = use_he
         self.model = CNN()
         self.model.set_initial_params()
         self.X_train = X_train
@@ -271,11 +273,15 @@ class Client:
 
         
         # Encrypt the noisy weights before sending them to the server
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", category=UserWarning)
-            encrypted_weights = encrypt_weights(noisy_weights, self.tenseal_context)
+        if self.use_he:
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", category=UserWarning)
+                encrypted_weights = encrypt_weights(noisy_weights, self.tenseal_context)
+            return encrypted_weights
+        else:
+            print("[Client] HE is disabled. Sending raw (noisy or clipped) weights.")
+            return noisy_weights
 
-        return encrypted_weights
     
    
     
@@ -378,11 +384,23 @@ def recvall(sock, n):
     return data
 
 
+def str2bool(v):
+    if isinstance(v, bool):
+        return v
+    if v.lower() in ("yes", "true", "t", "1"):
+        return True
+    elif v.lower() in ("no", "false", "f", "0"):
+        return False
+    else:
+        raise argparse.ArgumentTypeError("Boolean value expected.")
+
 
 # Client Setup
 parser = argparse.ArgumentParser()
 parser.add_argument('--use_dp', type=str2bool, default=True,
                     help="Toggle differential privacy noise addition (default: True)")
+parser.add_argument('--use_he', type=str2bool, default=True,
+                    help="Toggle homomorphic encryption (default: True)")
 parser.add_argument('--client_id', type=int, required=True, choices=[0, 1,2,3,4,5,6,7,8,9])
 parser.add_argument('--dp_epsilon', type=float, default=3.0,
                     help="Privacy budget epsilon for local differential privacy")
@@ -435,7 +453,9 @@ client = Client(X_train, y_train, X_val, y_val,
                 dp_epsilon=args.dp_epsilon,
                 num_clients=args.num_clients,
                 dp_noise_type=args.dp_noise_type,
-                use_dp=args.use_dp)
+                use_dp=args.use_dp,
+                use_he=args.use_he)
+
 
 
 
@@ -448,9 +468,11 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     print(f"Client {args.client_id} connected to server.")
     
     # Receive serialized TenSEAL context from the server and load it.
-    serialized_context = receive_data(s)
-    tenseal_context = ts.context_from(serialized_context)
-    client.tenseal_context = tenseal_context
+    if args.use_he:
+        serialized_context = receive_data(s)
+        tenseal_context = ts.context_from(serialized_context)
+        client.tenseal_context = tenseal_context
+
     
     while True:
         # Receive global weights (plain weights for local training)
