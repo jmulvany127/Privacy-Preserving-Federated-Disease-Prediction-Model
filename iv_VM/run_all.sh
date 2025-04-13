@@ -5,7 +5,14 @@ EXPERIMENT_NAME="exp_1"  # <-- Set your experiment name here
 
 # Start the server with the correct number of clients and experiment name
 echo "Starting server with $NUM_CLIENTS clients..."
-nohup python3 -u server_LDP.py --num_clients $NUM_CLIENTS --experiment_name "$EXPERIMENT_NAME" > server.log 2>&1 &
+#nohup python3 -u server_LDP.py --num_clients $NUM_CLIENTS --experiment_name "$EXPERIMENT_NAME" > server.log 2>&1 &
+nohup python3 -u server_LDP.py \
+  --num_clients $NUM_CLIENTS \
+  --experiment_name "$EXPERIMENT_NAME" \
+  --poly_modulus_degree 8192 \
+  --coeff_mod_bit_sizes "60,40,40,60" \
+  --global_scale_exp 40 \
+  > server.log 2>&1 &
 
 # Wait for server to be ready
 echo "Waiting for server to be ready..."

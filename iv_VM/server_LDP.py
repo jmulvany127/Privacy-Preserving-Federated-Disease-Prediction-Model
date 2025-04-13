@@ -23,20 +23,24 @@ import os
 import csv
 
 
-
-
-
-    
-
-
 # --- Parse CLI arguments ---
 parser = argparse.ArgumentParser(description="Federated Server")
 parser.add_argument('--num_clients', type=int, default=2, help='Number of federated clients')
 parser.add_argument('--use_he', type=str2bool, default=True, help='Toggle homomorphic encryption (default: True)')
-parser.add_argument('--experiment_name', type=str, default=None,
-                    help='Optional name of the experiment (used to group logs)')
+parser.add_argument('--experiment_name', type=str, default=None, help='Optional name of the experiment (used to group logs)')
+parser.add_argument('--poly_modulus_degree', type=int, default=8192, help='CKKS poly modulus degree (default: 8192)')
+parser.add_argument('--coeff_mod_bit_sizes', type=str, default='60,40,40,60',
+                    help='Comma-separated bit sizes for CKKS coeff modulus (default: "60,40,40,60")')
+parser.add_argument('--global_scale_exp', type=int, default=40,
+                    help='Exponent for CKKS global scale (e.g., 40 for 2^40)')
 
 args = parser.parse_args()
+
+# Convert comma-separated string to list of ints
+coeff_mod_bit_sizes = list(map(int, args.coeff_mod_bit_sizes.split(',')))
+poly_modulus_degree = args.poly_modulus_degree
+global_scale = 2 ** args.global_scale_exp
+
 
 
 
@@ -156,10 +160,6 @@ def recvall(sock, n):
 
 # --- Initialize TenSEAL Context on the Server ---
 if USE_HE:
-    poly_modulus_degree = 8192
-    coeff_mod_bit_sizes = [60, 40, 40, 60]
-    global_scale = 2 ** 40
-
     ts_context = ts.context(
         ts.SCHEME_TYPE.CKKS,
         poly_modulus_degree=poly_modulus_degree,
@@ -167,11 +167,11 @@ if USE_HE:
     )
     ts_context.global_scale = global_scale
     ts_context.generate_galois_keys()
-
     serialized_context = ts_context.serialize(save_secret_key=False)
 else:
     ts_context = None
     serialized_context = None
+
 
 
 
@@ -426,6 +426,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         conn.close()
         
     # Save experiment metadata
+# Save experiment metadata
     metadata_path = os.path.join(log_dir, "experiment_metadata.txt")
     with open(metadata_path, 'w') as meta_file:
         meta_file.write(f"Experiment Timestamp: {timestamp}\n")
@@ -434,7 +435,8 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         meta_file.write("CKKS Parameters:\n")
         meta_file.write(f"  Poly Modulus Degree: {poly_modulus_degree}\n")
         meta_file.write(f"  Coeff Mod Bit Sizes: {coeff_mod_bit_sizes}\n")
-        meta_file.write(f"  Global Scale: 2^{int(np.log2(global_scale))}\n")
+        meta_file.write(f"  Global Scale: 2^{args.global_scale_exp}\n")
+
 
     # Timing report
     with open(os.path.join(log_dir, "timing_report.txt"), 'w') as f:
