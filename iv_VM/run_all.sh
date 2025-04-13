@@ -13,7 +13,7 @@ sleep 15
 # Start clients
 for ((i=0; i<$NUM_CLIENTS; i++)); do
     echo "Starting client $i..."
-    nohup python3 client_LDP.py --client_id $i --num_clients $NUM_CLIENTS > client$i.log 2>&1 &
+    nohup python3 client_LDP.py --client_id $i --num_clients $NUM_CLIENTS --use_dp False > client$i.log 2>&1 &
 done
 
 echo " All processes started using nohup."

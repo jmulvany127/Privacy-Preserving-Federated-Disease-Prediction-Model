@@ -124,3 +124,5 @@ def sample_memory_usage(stop_event, mem_usage_list, mem_avail_list):
         mem_avail_list.append(mem_avail)
         time.sleep(1)
 
+def str2bool(v):
+    return str(v).lower() in ("yes", "true", "t", "1")

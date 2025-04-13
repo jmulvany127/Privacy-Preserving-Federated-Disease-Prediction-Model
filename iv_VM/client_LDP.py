@@ -140,8 +140,7 @@ def add_dp_noise(weights, epsilon, round_sensitivities, round_num, num_clients, 
 # Client Class
 class Client:
     def __init__(self, X_train, y_train, X_val, y_val,
-                 dp_epsilon, num_clients=2, dp_noise_type='gaussian'):
-        # Pass max_gradient to CNN on creation
+                 dp_epsilon, num_clients=2, dp_noise_type='gaussian', use_dp=True):
         self.model = CNN()
         self.model.set_initial_params()
         self.X_train = X_train
@@ -152,13 +151,14 @@ class Client:
         self.tenseal_context = None  
         
         # Store DP parameters
+        self.use_dp = use_dp
         self.dp_epsilon = dp_epsilon
         self.num_clients = num_clients
         self.dp_noise_type = dp_noise_type
         
-        # Initialize the update threshold dynamically and a round counter
-        self.current_round = 0  
-        self.update_threshold = None  # Will be set at each round
+        self.current_round = 0
+        self.update_threshold = None
+
 
     def update(self, global_weights):
         self.model.set_weights(global_weights)
@@ -256,14 +256,19 @@ class Client:
             ])
 
 
-        noisy_weights = add_dp_noise(
-            clipped_weights,
-            epsilon=self.dp_epsilon,
-            round_sensitivities=layer_sensitivity_dict,
-            round_num=self.current_round,
-            num_clients=self.num_clients,
-            noise_type=self.dp_noise_type
-        )
+        if self.use_dp:
+            noisy_weights = add_dp_noise(
+                clipped_weights,
+                epsilon=self.dp_epsilon,
+                round_sensitivities=layer_sensitivity_dict,
+                round_num=self.current_round,
+                num_clients=self.num_clients,
+                noise_type=self.dp_noise_type
+            )
+        else:
+            print("\n[Client] DP is disabled. Sending clipped weights without noise.")
+            noisy_weights = clipped_weights
+
         
         # Encrypt the noisy weights before sending them to the server
         with warnings.catch_warnings():
@@ -376,6 +381,8 @@ def recvall(sock, n):
 
 # Client Setup
 parser = argparse.ArgumentParser()
+parser.add_argument('--use_dp', type=str2bool, default=True,
+                    help="Toggle differential privacy noise addition (default: True)")
 parser.add_argument('--client_id', type=int, required=True, choices=[0, 1,2,3,4,5,6,7,8,9])
 parser.add_argument('--dp_epsilon', type=float, default=3.0,
                     help="Privacy budget epsilon for local differential privacy")
@@ -424,10 +431,12 @@ print(f"  Training samples: {len(y_train)}")
 print(f"    ↳ COVID: {int(np.sum(y_train))}, Non-COVID: {len(y_train) - int(np.sum(y_train))}")
 print(f"  Validation samples: {len(y_val)}")
 print(f"    ↳ COVID: {int(np.sum(y_val))}, Non-COVID: {len(y_val) - int(np.sum(y_val))}")
-client = Client(X_train, y_train, X_val,  y_val,
+client = Client(X_train, y_train, X_val, y_val,
                 dp_epsilon=args.dp_epsilon,
                 num_clients=args.num_clients,
-                dp_noise_type=args.dp_noise_type)
+                dp_noise_type=args.dp_noise_type,
+                use_dp=args.use_dp)
+
 
 
 # Connect to server
