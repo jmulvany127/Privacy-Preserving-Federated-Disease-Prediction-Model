@@ -9,3 +9,24 @@ Connected to ('127.0.0.1', 56428)
 Connected to ('127.0.0.1', 56434)
 
 --- Round 1/24 ---
+Round 1 - Accuracy: 49.33%
+F1 Score: 0.5077
+Confusion Matrix:
+[[ 46  54]
+ [ 98 102]]
+Classification Report:
+              precision    recall  f1-score   support
+
+         0.0     0.3194    0.4600    0.3770       100
+         1.0     0.6538    0.5100    0.5730       200
+
+    accuracy                         0.4933       300
+   macro avg     0.4866    0.4850    0.4750       300
+weighted avg     0.5424    0.4933    0.5077       300
+
+Traceback (most recent call last):
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 346, in <module>
+    log_server_round(round_num, acc, f1, round_duration, conf_matrix, report_dict)
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 74, in log_server_round
+    with open(server_log_path, mode='a', newline='') as f:
+FileNotFoundError: [Errno 2] No such file or directory: 'evaluation_logs/exp_ckks_params_polydeg4096/log_server_20250413_235737/server_log.csv'
