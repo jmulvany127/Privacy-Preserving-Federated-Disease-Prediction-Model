@@ -279,7 +279,7 @@ class Client:
                 encrypted_weights = encrypt_weights(noisy_weights, self.tenseal_context)
             return encrypted_weights
         else:
-            print("[Client] HE is disabled. Sending raw (noisy or clipped) weights.")
+            print("[Client] HE is disabled. Sending raw weights.")
             return noisy_weights
 
     
@@ -414,6 +414,23 @@ args = parser.parse_args()
 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 log_dir = os.path.join("evaluation_logs", f"log_clients_{timestamp}", f"client_{args.client_id}")
 os.makedirs(log_dir, exist_ok=True)
+# === Metadata Logging (Only for Client 0) ===
+if args.client_id == 0:
+    meta_path = os.path.join(log_dir, "client_metadata.txt")
+    with open(meta_path, 'w') as f:
+        f.write("=== Client Experiment Metadata ===\n")
+        f.write(f"Client ID: {args.client_id}\n")
+        f.write(f"Total Clients: {args.num_clients}\n")
+        f.write(f"Homomorphic Encryption (HE): {args.use_he}\n")
+        if args.use_he:
+            f.write("CKKS Parameters:\n")
+            f.write("  - poly_modulus_degree: 8192\n")
+            f.write("  - coeff_mod_bit_sizes: [60, 40, 40, 60]\n")
+            f.write("  - global_scale: 2^40\n")
+        f.write(f"Differential Privacy (DP): {args.use_dp}\n")
+        if args.use_dp:
+            f.write(f"  - epsilon: {args.dp_epsilon}\n")
+            f.write(f"  - noise_type: {args.dp_noise_type}\n")
 
 # Path to CSV log file
 client_log_path = os.path.join(log_dir, "metrics_log.csv")
@@ -425,6 +442,7 @@ with open(client_log_path, mode='w', newline='') as f:
         "Avg Memory (MB)", "Peak Memory (MB)", "Min Memory (MB)",
         "Avg Avail Mem (MB)", "Peak Avail Mem (MB)", "Min Avail Mem (MB)"
     ])
+
 
 
 client_data, _ = load_raw_covid_data_for_federated(num_clients=args.num_clients)

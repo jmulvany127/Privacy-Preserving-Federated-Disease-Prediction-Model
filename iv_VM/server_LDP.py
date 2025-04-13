@@ -35,6 +35,7 @@ with open(server_log_path, mode='w', newline='') as f:
         "Round", "Accuracy", "F1 Score", "Round Duration (s)",
         "Confusion Matrix", "Precision", "Recall", "Support"
     ])
+    
 
 
 # --- Parse CLI arguments ---
@@ -407,13 +408,24 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     for conn in clients:
         conn.close()
         
+    # Save experiment metadata
+    metadata_path = os.path.join(log_dir, "experiment_metadata.txt")
+    with open(metadata_path, 'w') as meta_file:
+        meta_file.write(f"Experiment Timestamp: {timestamp}\n")
+        meta_file.write(f"Use Homomorphic Encryption: {USE_HE}\n")
+        meta_file.write(f"Number of Clients: {NUM_CLIENTS}\n")
+        meta_file.write("CKKS Parameters:\n")
+        meta_file.write(f"  Poly Modulus Degree: {poly_modulus_degree}\n")
+        meta_file.write(f"  Coeff Mod Bit Sizes: {coeff_mod_bit_sizes}\n")
+        meta_file.write(f"  Global Scale: 2^{int(np.log2(global_scale))}\n")
+
     # Timing report
     with open(os.path.join(log_dir, "timing_report.txt"), 'w') as f:
         f.write(f"Total training time: {sum(round_times):.2f} seconds\n")
         f.write(f"Avg time per round: {sum(round_times)/len(round_times):.2f} seconds\n")
         for i, rt in enumerate(round_times):
             f.write(f"Round {i+1}: {rt:.2f} seconds\n")
-
+            
     # Communication report
     with open(os.path.join(log_dir, "communication_overhead.txt"), 'w') as f:
         f.write(f"Total bytes sent: {comm_stats['total_sent']}\n")
