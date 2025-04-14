@@ -4,10 +4,20 @@
 EXPERIMENT_NAME="exp_ckks_params"
 NUM_CLIENTS=2
 SLEEP_BETWEEN_RUNS=10  # seconds
+PORT=65432  # server port to check
 
 # === Create logs directory ===
 LOG_DIR="logs"
 mkdir -p "$LOG_DIR"
+
+# === Helper: Wait for port to become free ===
+wait_for_port() {
+  echo "Checking if port $PORT is available..."
+  while lsof -i :$PORT -sTCP:LISTEN -t >/dev/null; do
+    echo "Port $PORT is still in use. Waiting..."
+    sleep 2
+  done
+}
 
 # === Baseline values ===
 BASELINE_DEGREE=8192
@@ -15,7 +25,6 @@ BASELINE_BITS="60,40,40,60"
 BASELINE_SCALE=40
 
 # === Sweep 1: poly_modulus_degree ===
-# === Sweep 1: poly_modulus_degree (with safe matching coeff_bit_sizes) ===
 POLY_DEGREES=(4096 8192 16384 32768)
 SAFE_BITS=("30,20,30" "60,40,40,60" "60,40,40,60" "60,40,40,60")
 
@@ -26,6 +35,10 @@ for i in "${!POLY_DEGREES[@]}"; do
 
   echo ""
   echo "=== Running poly_modulus_degree = $DEGREE with coeff_mod_bit_sizes = $BITS ==="
+
+  pkill -f server_LDP.py
+  wait_for_port
+
   nohup python3 -u server_LDP.py \
     --num_clients $NUM_CLIENTS \
     --experiment_name "$RUN_NAME" \
@@ -53,12 +66,9 @@ for i in "${!POLY_DEGREES[@]}"; do
   sleep $SLEEP_BETWEEN_RUNS
 done
 
-
-# === Sweep 2: coeff_mod_bit_sizes (adjust poly_degree as needed) ===
+# === Sweep 2: coeff_mod_bit_sizes ===
 COEFF_BIT_OPTIONS=("30,20,30" "40,30,30,40" "50,20,20,50" "40,20,20,40")
-#COEFF_BIT_OPTIONS=("60,40,40,60")
-COEFF_DEGREES=(4096 8192 8192 8192)  # safe poly_modulus_degree for each
-#COEFF_DEGREES=( 8192)
+COEFF_DEGREES=(4096 8192 8192 8192)
 
 for i in "${!COEFF_BIT_OPTIONS[@]}"; do
   BITS="${COEFF_BIT_OPTIONS[$i]}"
@@ -67,6 +77,10 @@ for i in "${!COEFF_BIT_OPTIONS[@]}"; do
 
   echo ""
   echo "=== Running coeff_mod_bit_sizes = $BITS with poly_modulus_degree = $DEGREE ==="
+
+  pkill -f server_LDP.py
+  wait_for_port
+
   nohup python3 -u server_LDP.py \
     --num_clients $NUM_CLIENTS \
     --experiment_name "$RUN_NAME" \
@@ -95,12 +109,15 @@ for i in "${!COEFF_BIT_OPTIONS[@]}"; do
 done
 
 # === Sweep 3: global_scale_exp ===
-#SCALE_EXPS=(20 30 50 60)
 SCALE_EXPS=(40)
 for SCALE in "${SCALE_EXPS[@]}"; do
   RUN_NAME="${EXPERIMENT_NAME}_scale${SCALE}"
   echo ""
   echo "=== Running global_scale_exp = $SCALE ==="
+
+  pkill -f server_LDP.py
+  wait_for_port
+
   nohup python3 -u server_LDP.py \
     --num_clients $NUM_CLIENTS \
     --experiment_name "$RUN_NAME" \

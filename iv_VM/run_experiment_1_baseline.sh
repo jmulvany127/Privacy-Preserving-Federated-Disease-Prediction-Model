@@ -2,13 +2,23 @@
 
 # === Experiment Settings ===
 EXPERIMENT_NAME="exp_baseline"
-NUM_CLIENTS=2
-REPEATS=3
-SLEEP_BETWEEN_RUNS=10  # Seconds
+NUM_CLIENTS=4
+REPEATS=5
+SLEEP_BETWEEN_RUNS=60  # Seconds
+PORT=65432  # Server port to check before each run
 
 # Create logs directory if it doesn't exist
 LOG_DIR="logs"
 mkdir -p "$LOG_DIR"
+
+# === Helper: Wait for port to become free ===
+wait_for_port() {
+  echo "Checking if port $PORT is available..."
+  while lsof -i :$PORT -sTCP:LISTEN -t >/dev/null; do
+    echo "Port $PORT is still in use. Waiting..."
+    sleep 5
+  done
+}
 
 # === Core Configurations (client-specific args) ===
 CONFIGS=(
@@ -21,14 +31,13 @@ CONFIGS=(
 for config_index in "${!CONFIGS[@]}"; do
   CLIENT_ARGS="${CONFIGS[$config_index]}"
 
-# Extract --use_he value from client args using regex
-if [[ "$CLIENT_ARGS" =~ (--use_he[[:space:]]+(True|False)) ]]; then
-  SERVER_HE="${BASH_REMATCH[1]}"
-else
-  SERVER_HE="--use_he False"  # Default fallback
-fi
+  # Extract --use_he value from client args using regex
+  if [[ "$CLIENT_ARGS" =~ (--use_he[[:space:]]+(True|False)) ]]; then
+    SERVER_HE="${BASH_REMATCH[1]}"
+  else
+    SERVER_HE="--use_he False"  # Default fallback
+  fi
 
-  
   for run_id in $(seq 1 $REPEATS); do
     echo ""
     echo "=== Running config $config_index, run $run_id ==="
@@ -37,6 +46,18 @@ fi
 
     # Define a unique sub-experiment name
     RUN_NAME="${EXPERIMENT_NAME}_cfg${config_index}_run${run_id}"
+
+    # Kill any leftover server process
+    echo "Killing any existing server processes..."
+    pkill -f server_LDP.py
+    PID_ON_PORT=$(lsof -i tcp:$PORT -sTCP:LISTEN -t)
+    if [[ -n "$PID_ON_PORT" ]]; then
+      kill -9 $PID_ON_PORT
+    fi
+
+
+    # Wait until the port is fully released
+    wait_for_port
 
     # Start server
     echo "Starting server..."
