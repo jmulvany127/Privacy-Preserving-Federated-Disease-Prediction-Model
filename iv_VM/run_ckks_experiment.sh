@@ -3,7 +3,7 @@
 # === Experiment Settings ===
 EXPERIMENT_NAME="exp_ckks_params"
 NUM_CLIENTS=2
-SLEEP_BETWEEN_RUNS=10  # seconds
+SLEEP_BETWEEN_RUNS=60  # seconds
 PORT=65432  # server port to check
 
 # === Create logs directory ===

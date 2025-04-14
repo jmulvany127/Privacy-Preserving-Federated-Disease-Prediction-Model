@@ -2,7 +2,7 @@
 
 # === Experiment Settings ===
 EXPERIMENT_NAME="exp_baseline"
-NUM_CLIENTS=4
+NUM_CLIENTS=2
 REPEATS=5
 SLEEP_BETWEEN_RUNS=60  # Seconds
 PORT=65432  # Server port to check before each run

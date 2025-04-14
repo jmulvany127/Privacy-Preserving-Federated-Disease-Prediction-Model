@@ -1,0 +1,317 @@
+2025-04-14 18:16:26.767245: I tensorflow/core/util/port.cc:110] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+2025-04-14 18:16:26.808664: I tensorflow/tsl/cuda/cudart_stub.cc:28] Could not find cuda drivers on your machine, GPU will not be used.
+2025-04-14 18:16:27.193259: I tensorflow/tsl/cuda/cudart_stub.cc:28] Could not find cuda drivers on your machine, GPU will not be used.
+2025-04-14 18:16:27.195996: I tensorflow/core/platform/cpu_feature_guard.cc:182] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 AVX512F AVX512_VNNI FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2025-04-14 18:16:28.678731: W tensorflow/compiler/tf2tensorrt/utils/py_utils.cc:38] TF-TRT Warning: Could not find TensorRT
+Waiting for clients to connect...
+Connected to ('127.0.0.1', 56230)
+Connected to ('127.0.0.1', 56242)
+
+--- Round 1/24 ---
+/home/jmulvany/Thesis_BU/venv/lib/python3.10/site-packages/sklearn/metrics/_classification.py:1344: UndefinedMetricWarning: Precision and F-score are ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, msg_start, len(result))
+/home/jmulvany/Thesis_BU/venv/lib/python3.10/site-packages/sklearn/metrics/_classification.py:1344: UndefinedMetricWarning: Precision and F-score are ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, msg_start, len(result))
+/home/jmulvany/Thesis_BU/venv/lib/python3.10/site-packages/sklearn/metrics/_classification.py:1344: UndefinedMetricWarning: Precision and F-score are ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, msg_start, len(result))
+Round 1 - Accuracy: 33.33%
+F1 Score: 0.1667
+Confusion Matrix:
+[[100   0]
+ [200   0]]
+Classification Report:
+              precision    recall  f1-score   support
+
+         0.0     0.3333    1.0000    0.5000       100
+         1.0     0.0000    0.0000    0.0000       200
+
+    accuracy                         0.3333       300
+   macro avg     0.1667    0.5000    0.2500       300
+weighted avg     0.1111    0.3333    0.1667       300
+
+/home/jmulvany/Thesis_BU/venv/lib/python3.10/site-packages/sklearn/metrics/_classification.py:1344: UndefinedMetricWarning: Precision and F-score are ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, msg_start, len(result))
+/home/jmulvany/Thesis_BU/venv/lib/python3.10/site-packages/sklearn/metrics/_classification.py:1344: UndefinedMetricWarning: Precision and F-score are ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, msg_start, len(result))
+/home/jmulvany/Thesis_BU/venv/lib/python3.10/site-packages/sklearn/metrics/_classification.py:1344: UndefinedMetricWarning: Precision and F-score are ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, msg_start, len(result))
+Round 1 duration: 53.36 seconds
+
+--- Round 2/24 ---
+/home/jmulvany/Thesis_BU/venv/lib/python3.10/site-packages/sklearn/metrics/_classification.py:1344: UndefinedMetricWarning: Precision and F-score are ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, msg_start, len(result))
+/home/jmulvany/Thesis_BU/venv/lib/python3.10/site-packages/sklearn/metrics/_classification.py:1344: UndefinedMetricWarning: Precision and F-score are ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, msg_start, len(result))
+/home/jmulvany/Thesis_BU/venv/lib/python3.10/site-packages/sklearn/metrics/_classification.py:1344: UndefinedMetricWarning: Precision and F-score are ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, msg_start, len(result))
+Round 2 - Accuracy: 33.33%
+F1 Score: 0.1667
+Confusion Matrix:
+[[100   0]
+ [200   0]]
+Classification Report:
+              precision    recall  f1-score   support
+
+         0.0     0.3333    1.0000    0.5000       100
+         1.0     0.0000    0.0000    0.0000       200
+
+    accuracy                         0.3333       300
+   macro avg     0.1667    0.5000    0.2500       300
+weighted avg     0.1111    0.3333    0.1667       300
+
+/home/jmulvany/Thesis_BU/venv/lib/python3.10/site-packages/sklearn/metrics/_classification.py:1344: UndefinedMetricWarning: Precision and F-score are ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, msg_start, len(result))
+/home/jmulvany/Thesis_BU/venv/lib/python3.10/site-packages/sklearn/metrics/_classification.py:1344: UndefinedMetricWarning: Precision and F-score are ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, msg_start, len(result))
+/home/jmulvany/Thesis_BU/venv/lib/python3.10/site-packages/sklearn/metrics/_classification.py:1344: UndefinedMetricWarning: Precision and F-score are ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, msg_start, len(result))
+Round 2 duration: 18.04 seconds
+
+--- Round 3/24 ---
+/home/jmulvany/Thesis_BU/venv/lib/python3.10/site-packages/sklearn/metrics/_classification.py:1344: UndefinedMetricWarning: Precision and F-score are ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, msg_start, len(result))
+/home/jmulvany/Thesis_BU/venv/lib/python3.10/site-packages/sklearn/metrics/_classification.py:1344: UndefinedMetricWarning: Precision and F-score are ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, msg_start, len(result))
+/home/jmulvany/Thesis_BU/venv/lib/python3.10/site-packages/sklearn/metrics/_classification.py:1344: UndefinedMetricWarning: Precision and F-score are ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, msg_start, len(result))
+Round 3 - Accuracy: 33.33%
+F1 Score: 0.1667
+Confusion Matrix:
+[[100   0]
+ [200   0]]
+Classification Report:
+              precision    recall  f1-score   support
+
+         0.0     0.3333    1.0000    0.5000       100
+         1.0     0.0000    0.0000    0.0000       200
+
+    accuracy                         0.3333       300
+   macro avg     0.1667    0.5000    0.2500       300
+weighted avg     0.1111    0.3333    0.1667       300
+
+/home/jmulvany/Thesis_BU/venv/lib/python3.10/site-packages/sklearn/metrics/_classification.py:1344: UndefinedMetricWarning: Precision and F-score are ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, msg_start, len(result))
+/home/jmulvany/Thesis_BU/venv/lib/python3.10/site-packages/sklearn/metrics/_classification.py:1344: UndefinedMetricWarning: Precision and F-score are ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, msg_start, len(result))
+/home/jmulvany/Thesis_BU/venv/lib/python3.10/site-packages/sklearn/metrics/_classification.py:1344: UndefinedMetricWarning: Precision and F-score are ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, msg_start, len(result))
+Round 3 duration: 27.99 seconds
+
+--- Round 4/24 ---
+/home/jmulvany/Thesis_BU/venv/lib/python3.10/site-packages/sklearn/metrics/_classification.py:1344: UndefinedMetricWarning: Precision and F-score are ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, msg_start, len(result))
+/home/jmulvany/Thesis_BU/venv/lib/python3.10/site-packages/sklearn/metrics/_classification.py:1344: UndefinedMetricWarning: Precision and F-score are ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, msg_start, len(result))
+/home/jmulvany/Thesis_BU/venv/lib/python3.10/site-packages/sklearn/metrics/_classification.py:1344: UndefinedMetricWarning: Precision and F-score are ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, msg_start, len(result))
+Round 4 - Accuracy: 33.33%
+F1 Score: 0.1667
+Confusion Matrix:
+[[100   0]
+ [200   0]]
+Classification Report:
+              precision    recall  f1-score   support
+
+         0.0     0.3333    1.0000    0.5000       100
+         1.0     0.0000    0.0000    0.0000       200
+
+    accuracy                         0.3333       300
+   macro avg     0.1667    0.5000    0.2500       300
+weighted avg     0.1111    0.3333    0.1667       300
+
+/home/jmulvany/Thesis_BU/venv/lib/python3.10/site-packages/sklearn/metrics/_classification.py:1344: UndefinedMetricWarning: Precision and F-score are ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, msg_start, len(result))
+/home/jmulvany/Thesis_BU/venv/lib/python3.10/site-packages/sklearn/metrics/_classification.py:1344: UndefinedMetricWarning: Precision and F-score are ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, msg_start, len(result))
+/home/jmulvany/Thesis_BU/venv/lib/python3.10/site-packages/sklearn/metrics/_classification.py:1344: UndefinedMetricWarning: Precision and F-score are ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, msg_start, len(result))
+Round 4 duration: 43.00 seconds
+
+--- Round 5/24 ---
+/home/jmulvany/Thesis_BU/venv/lib/python3.10/site-packages/sklearn/metrics/_classification.py:1344: UndefinedMetricWarning: Precision and F-score are ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, msg_start, len(result))
+/home/jmulvany/Thesis_BU/venv/lib/python3.10/site-packages/sklearn/metrics/_classification.py:1344: UndefinedMetricWarning: Precision and F-score are ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, msg_start, len(result))
+/home/jmulvany/Thesis_BU/venv/lib/python3.10/site-packages/sklearn/metrics/_classification.py:1344: UndefinedMetricWarning: Precision and F-score are ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, msg_start, len(result))
+Round 5 - Accuracy: 33.33%
+F1 Score: 0.1667
+Confusion Matrix:
+[[100   0]
+ [200   0]]
+Classification Report:
+              precision    recall  f1-score   support
+
+         0.0     0.3333    1.0000    0.5000       100
+         1.0     0.0000    0.0000    0.0000       200
+
+    accuracy                         0.3333       300
+   macro avg     0.1667    0.5000    0.2500       300
+weighted avg     0.1111    0.3333    0.1667       300
+
+/home/jmulvany/Thesis_BU/venv/lib/python3.10/site-packages/sklearn/metrics/_classification.py:1344: UndefinedMetricWarning: Precision and F-score are ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, msg_start, len(result))
+/home/jmulvany/Thesis_BU/venv/lib/python3.10/site-packages/sklearn/metrics/_classification.py:1344: UndefinedMetricWarning: Precision and F-score are ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, msg_start, len(result))
+/home/jmulvany/Thesis_BU/venv/lib/python3.10/site-packages/sklearn/metrics/_classification.py:1344: UndefinedMetricWarning: Precision and F-score are ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, msg_start, len(result))
+Round 5 duration: 17.95 seconds
+
+--- Round 6/24 ---
+Round 6 - Accuracy: 54.33%
+F1 Score: 0.5359
+Confusion Matrix:
+[[ 88  12]
+ [125  75]]
+Classification Report:
+              precision    recall  f1-score   support
+
+         0.0     0.4131    0.8800    0.5623       100
+         1.0     0.8621    0.3750    0.5226       200
+
+    accuracy                         0.5433       300
+   macro avg     0.6376    0.6275    0.5425       300
+weighted avg     0.7124    0.5433    0.5359       300
+
+Round 6 duration: 24.96 seconds
+
+--- Round 7/24 ---
+Round 7 - Accuracy: 69.33%
+F1 Score: 0.7020
+Confusion Matrix:
+[[ 76  24]
+ [ 68 132]]
+Classification Report:
+              precision    recall  f1-score   support
+
+         0.0     0.5278    0.7600    0.6230       100
+         1.0     0.8462    0.6600    0.7416       200
+
+    accuracy                         0.6933       300
+   macro avg     0.6870    0.7100    0.6823       300
+weighted avg     0.7400    0.6933    0.7020       300
+
+Round 7 duration: 23.03 seconds
+
+--- Round 8/24 ---
+Round 8 - Accuracy: 72.67%
+F1 Score: 0.7302
+Confusion Matrix:
+[[ 65  35]
+ [ 47 153]]
+Classification Report:
+              precision    recall  f1-score   support
+
+         0.0     0.5804    0.6500    0.6132       100
+         1.0     0.8138    0.7650    0.7887       200
+
+    accuracy                         0.7267       300
+   macro avg     0.6971    0.7075    0.7009       300
+weighted avg     0.7360    0.7267    0.7302       300
+
+Round 8 duration: 42.99 seconds
+
+--- Round 9/24 ---
+Round 9 - Accuracy: 39.00%
+F1 Score: 0.2785
+Confusion Matrix:
+[[100   0]
+ [183  17]]
+Classification Report:
+              precision    recall  f1-score   support
+
+         0.0     0.3534    1.0000    0.5222       100
+         1.0     1.0000    0.0850    0.1567       200
+
+    accuracy                         0.3900       300
+   macro avg     0.6767    0.5425    0.3394       300
+weighted avg     0.7845    0.3900    0.2785       300
+
+Round 9 duration: 15.94 seconds
+
+--- Round 10/24 ---
+Round 10 - Accuracy: 88.67%
+F1 Score: 0.8821
+Confusion Matrix:
+[[ 71  29]
+ [  5 195]]
+Classification Report:
+              precision    recall  f1-score   support
+
+         0.0     0.9342    0.7100    0.8068       100
+         1.0     0.8705    0.9750    0.9198       200
+
+    accuracy                         0.8867       300
+   macro avg     0.9024    0.8425    0.8633       300
+weighted avg     0.8918    0.8867    0.8821       300
+
+Round 10 duration: 27.98 seconds
+
+--- Round 11/24 ---
+Round 11 - Accuracy: 91.67%
+F1 Score: 0.9161
+Confusion Matrix:
+[[ 85  15]
+ [ 10 190]]
+Classification Report:
+              precision    recall  f1-score   support
+
+         0.0     0.8947    0.8500    0.8718       100
+         1.0     0.9268    0.9500    0.9383       200
+
+    accuracy                         0.9167       300
+   macro avg     0.9108    0.9000    0.9050       300
+weighted avg     0.9161    0.9167    0.9161       300
+
+
+*** F1 threshold reached: 0.9161 >= 0.9. Stopping training early. ***
+
+=== Timing Report ===
+Total training time: 329.22 seconds
+Average time per round: 29.93 seconds
+Average time per round per client: 14.96 seconds
+Round durations:
+  Round 1: 53.36 seconds
+  Round 2: 18.04 seconds
+  Round 3: 27.99 seconds
+  Round 4: 43.00 seconds
+  Round 5: 17.95 seconds
+  Round 6: 24.96 seconds
+  Round 7: 23.03 seconds
+  Round 8: 42.99 seconds
+  Round 9: 15.94 seconds
+  Round 10: 27.98 seconds
+  Round 11: 33.98 seconds
+
+=== Communication Overhead Report ===
+Summary of Communication:
+  Total Transferred: 334,087,688 bytes
+  Total Sent: 167,043,844 bytes
+  Total Received: 167,043,844 bytes
+  Avg Sent per Client (Total): 83,521,922.00 bytes
+  Avg Received per Client (Total): 83,521,922.00 bytes
+  Avg Sent per Client per Round: 7,592,902.00 bytes
+  Avg Received per Client per Round: 7,592,902.00 bytes
+
+=== Resource Usage Report ===
+CPU Usage:
+  Average of averages: 1.61%
+  Overall Peak: 46.98%
+  Overall Min: 0.00%
+  Average per round Peak: 29.85%
+  Average per round Min: 0.00%
+Memory Usage:
+  Average of averages: 976.88 MB
+  Overall Peak: 1162.02 MB
+  Overall Min: 576.92 MB
+  Average per round Peak: 990.97 MB
+  Average per round Min: 966.04 MB
+Available Memory:
+  Average of averages: 2195.83 MB
+  Overall Peak: 3616.44 MB
+  Overall Min: 1823.21 MB
+  Average per round Peak: 2298.32 MB
+  Average per round Min: 2164.00 MB
+
+Training complete.
