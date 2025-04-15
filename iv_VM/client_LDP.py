@@ -423,24 +423,6 @@ else:
 
 os.makedirs(log_dir, exist_ok=True)
 
-# === Metadata Logging (Only for Client 0) ===
-if args.client_id == 0:
-    meta_path = os.path.join(log_dir, "client_metadata.txt")
-    with open(meta_path, 'w') as f:
-        f.write("=== Client Experiment Metadata ===\n")
-        f.write(f"Client ID: {args.client_id}\n")
-        f.write(f"Total Clients: {args.num_clients}\n")
-        f.write(f"Homomorphic Encryption (HE): {args.use_he}\n")
-        if args.use_he:
-            f.write("CKKS Parameters:\n")
-            f.write("  - poly_modulus_degree: 8192\n")
-            f.write("  - coeff_mod_bit_sizes: [60, 40, 40, 60]\n")
-            f.write("  - global_scale: 2^40\n")
-        f.write(f"Differential Privacy (DP): {args.use_dp}\n")
-        if args.use_dp:
-            f.write(f"  - epsilon: {args.dp_epsilon}\n")
-            f.write(f"  - noise_type: {args.dp_noise_type}\n")
-
 # Path to CSV log file
 client_log_path = os.path.join(log_dir, "metrics_log.csv")
 with open(client_log_path, mode='w', newline='') as f:
@@ -483,6 +465,26 @@ client = Client(X_train, y_train, X_val, y_val,
                 use_dp=args.use_dp,
                 use_he=args.use_he)
 
+# === Metadata Logging (Only for Client 0) ===
+if args.client_id == 0:
+    meta_path = os.path.join(log_dir, "client_metadata.txt")
+    with open(meta_path, 'w') as f:
+        f.write("=== Client Experiment Metadata ===\n")
+        f.write(f"Client ID: {args.client_id}\n")
+        f.write(f"Total Clients: {args.num_clients}\n")
+        f.write(f"Homomorphic Encryption (HE): {args.use_he}\n")
+
+        if args.use_he and client.tenseal_context is not None:
+            context = client.tenseal_context
+            f.write("CKKS Parameters (Received):\n")
+            f.write(f"  - poly_modulus_degree: {context.poly_modulus_degree()}\n")
+            f.write(f"  - coeff_mod_bit_sizes: {context.coeff_modulus_sizes()}\n")
+            f.write(f"  - global_scale: {context.global_scale()}\n")
+
+        f.write(f"Differential Privacy (DP): {args.use_dp}\n")
+        if args.use_dp:
+            f.write(f"  - epsilon: {args.dp_epsilon}\n")
+            f.write(f"  - noise_type: {args.dp_noise_type}\n")
 
 
 

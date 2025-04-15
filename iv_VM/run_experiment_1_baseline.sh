@@ -3,7 +3,7 @@
 # === Experiment Settings ===
 EXPERIMENT_NAME="exp_baseline"
 NUM_CLIENTS=2
-REPEATS=5
+REPEATS=10
 SLEEP_BETWEEN_RUNS=60  # Seconds
 PORT=65432  # Server port to check before each run
 
@@ -22,9 +22,10 @@ wait_for_port() {
 
 # === Core Configurations (client-specific args) ===
 CONFIGS=(
-  "--use_he False --use_dp False"                  # FL
-  "--use_he True  --use_dp False"                  # FL + HE
-  "--use_he True  --use_dp True  --dp_epsilon 3.0" # FL + HE + DP
+  "--use_he False --use_dp False"                   # FL
+  "--use_he True  --use_dp False"                   # FL + HE
+  "--use_he True  --use_dp True  --dp_epsilon 3.0"  # FL + HE + DP
+  "--use_he False --use_dp True  --dp_epsilon 3.0"  # FL + DP
 )
 
 # === Start Experiment ===
@@ -54,7 +55,6 @@ for config_index in "${!CONFIGS[@]}"; do
     if [[ -n "$PID_ON_PORT" ]]; then
       kill -9 $PID_ON_PORT
     fi
-
 
     # Wait until the port is fully released
     wait_for_port
@@ -96,3 +96,7 @@ done
 
 echo ""
 echo "=== All experiment runs completed ==="
+
+echo "Starting post-baseline performance experiment..."
+nohup bash run_ckks_experiment.sh > performance_experiment_output.log 2>&1 &
+

@@ -188,7 +188,7 @@ global_model = CNN()
 global_model.set_initial_params()
 
 # Federated training settings
-rounds = 24
+rounds = 25
 # <-- Define your F1 threshold here. Change this value to the desired threshold.
 F1_THRESHOLD = 0.9
 
