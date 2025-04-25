@@ -1,0 +1,120 @@
+Round 1:
+  avg_cpu: 3.57
+  peak_cpu: 36.95
+  min_cpu: 0.00
+  avg_mem: 774.08
+  peak_mem: 1146.62
+  min_mem: 689.41
+  avg_avail: 2516.46
+  peak_avail: 3362.86
+  min_avail: 1717.89
+Round 2:
+  avg_cpu: 2.91
+  peak_cpu: 33.48
+  min_cpu: 0.00
+  avg_mem: 1253.22
+  peak_mem: 1364.02
+  min_mem: 1205.94
+  avg_avail: 1515.51
+  peak_avail: 1646.69
+  min_avail: 1377.24
+Round 3:
+  avg_cpu: 2.43
+  peak_cpu: 32.20
+  min_cpu: 0.00
+  avg_mem: 1345.62
+  peak_mem: 1410.55
+  min_mem: 1312.56
+  avg_avail: 1345.04
+  peak_avail: 1464.00
+  min_avail: 1214.72
+Round 4:
+  avg_cpu: 2.92
+  peak_cpu: 36.98
+  min_cpu: 0.00
+  avg_mem: 1386.51
+  peak_mem: 1462.45
+  min_mem: 1357.65
+  avg_avail: 1071.84
+  peak_avail: 1351.56
+  min_avail: 895.89
+Round 5:
+  avg_cpu: 3.22
+  peak_cpu: 34.20
+  min_cpu: 0.00
+  avg_mem: 1413.72
+  peak_mem: 1466.27
+  min_mem: 1409.09
+  avg_avail: 970.66
+  peak_avail: 1040.24
+  min_avail: 890.71
+Round 6:
+  avg_cpu: 2.83
+  peak_cpu: 24.48
+  min_cpu: 0.00
+  avg_mem: 1422.22
+  peak_mem: 1537.92
+  min_mem: 1412.52
+  avg_avail: 955.58
+  peak_avail: 989.02
+  min_avail: 885.66
+Round 7:
+  avg_cpu: 1.63
+  peak_cpu: 19.60
+  min_cpu: 0.00
+  avg_mem: 1435.86
+  peak_mem: 1473.62
+  min_mem: 1432.48
+  avg_avail: 966.86
+  peak_avail: 1010.78
+  min_avail: 893.00
+Round 8:
+  avg_cpu: 2.58
+  peak_cpu: 31.88
+  min_cpu: 0.00
+  avg_mem: 1437.55
+  peak_mem: 1491.62
+  min_mem: 1419.94
+  avg_avail: 924.09
+  peak_avail: 1006.24
+  min_avail: 729.87
+Round 9:
+  avg_cpu: 3.02
+  peak_cpu: 32.70
+  min_cpu: 0.00
+  avg_mem: 1509.37
+  peak_mem: 1574.40
+  min_mem: 1498.93
+  avg_avail: 823.69
+  peak_avail: 873.94
+  min_avail: 697.30
+Round 10:
+  avg_cpu: 2.65
+  peak_cpu: 30.23
+  min_cpu: 0.00
+  avg_mem: 1525.16
+  peak_mem: 1578.95
+  min_mem: 1516.89
+  avg_avail: 809.32
+  peak_avail: 859.55
+  min_avail: 666.10
+Round 11:
+  avg_cpu: 1.54
+  peak_cpu: 29.45
+  min_cpu: 0.00
+  avg_mem: 1544.85
+  peak_mem: 1648.83
+  min_mem: 1523.21
+  avg_avail: 799.38
+  peak_avail: 873.79
+  min_avail: 699.52
+Round 12:
+  avg_cpu: 2.73
+  peak_cpu: 34.42
+  min_cpu: 0.00
+  avg_mem: 1598.89
+  peak_mem: 1645.71
+  min_mem: 1593.50
+  avg_avail: 722.87
+  peak_avail: 756.70
+  min_avail: 651.77

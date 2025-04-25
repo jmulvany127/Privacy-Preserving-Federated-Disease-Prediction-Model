@@ -1,0 +1,16 @@
+Total training time: 357.72 seconds
+Avg time per round: 25.55 seconds
+Round 1: 24.41 seconds
+Round 2: 26.77 seconds
+Round 3: 25.95 seconds
+Round 4: 26.00 seconds
+Round 5: 25.24 seconds
+Round 6: 25.40 seconds
+Round 7: 24.23 seconds
+Round 8: 24.64 seconds
+Round 9: 25.31 seconds
+Round 10: 25.48 seconds
+Round 11: 26.02 seconds
+Round 12: 25.61 seconds
+Round 13: 26.16 seconds
+Round 14: 26.50 seconds

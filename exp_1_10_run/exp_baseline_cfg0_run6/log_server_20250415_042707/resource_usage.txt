@@ -1,0 +1,110 @@
+Round 1:
+  avg_cpu: 1.51
+  peak_cpu: 28.98
+  min_cpu: 0.00
+  avg_mem: 592.62
+  peak_mem: 593.79
+  min_mem: 570.58
+  avg_avail: 1921.89
+  peak_avail: 2597.67
+  min_avail: 1833.73
+Round 2:
+  avg_cpu: 1.11
+  peak_cpu: 22.98
+  min_cpu: 0.00
+  avg_mem: 846.35
+  peak_mem: 852.91
+  min_mem: 807.76
+  avg_avail: 1519.94
+  peak_avail: 1637.50
+  min_avail: 1483.39
+Round 3:
+  avg_cpu: 1.81
+  peak_cpu: 27.98
+  min_cpu: 0.00
+  avg_mem: 964.17
+  peak_mem: 965.64
+  min_mem: 942.05
+  avg_avail: 1336.53
+  peak_avail: 1416.58
+  min_avail: 1322.49
+Round 4:
+  avg_cpu: 1.27
+  peak_cpu: 27.23
+  min_cpu: 0.00
+  avg_mem: 1050.80
+  peak_mem: 1054.94
+  min_mem: 1034.97
+  avg_avail: 996.58
+  peak_avail: 1242.67
+  min_avail: 942.16
+Round 5:
+  avg_cpu: 1.00
+  peak_cpu: 21.23
+  min_cpu: 0.00
+  avg_mem: 1070.58
+  peak_mem: 1071.41
+  min_mem: 1055.48
+  avg_avail: 967.30
+  peak_avail: 997.21
+  min_avail: 928.06
+Round 6:
+  avg_cpu: 0.96
+  peak_cpu: 20.48
+  min_cpu: 0.00
+  avg_mem: 1077.35
+  peak_mem: 1078.21
+  min_mem: 1077.03
+  avg_avail: 926.36
+  peak_avail: 935.44
+  min_avail: 900.16
+Round 7:
+  avg_cpu: 0.96
+  peak_cpu: 20.98
+  min_cpu: 0.00
+  avg_mem: 1078.24
+  peak_mem: 1078.24
+  min_mem: 1078.24
+  avg_avail: 903.34
+  peak_avail: 904.27
+  min_avail: 899.70
+Round 8:
+  avg_cpu: 1.65
+  peak_cpu: 23.98
+  min_cpu: 0.00
+  avg_mem: 1078.71
+  peak_mem: 1078.75
+  min_mem: 1078.23
+  avg_avail: 908.28
+  peak_avail: 928.67
+  min_avail: 896.20
+Round 9:
+  avg_cpu: 1.34
+  peak_cpu: 20.98
+  min_cpu: 0.00
+  avg_mem: 1079.21
+  peak_mem: 1079.21
+  min_mem: 1079.21
+  avg_avail: 919.56
+  peak_avail: 921.21
+  min_avail: 918.13
+Round 10:
+  avg_cpu: 0.99
+  peak_cpu: 20.98
+  min_cpu: 0.00
+  avg_mem: 1079.45
+  peak_mem: 1079.46
+  min_mem: 1079.45
+  avg_avail: 919.24
+  peak_avail: 934.49
+  min_avail: 884.45
+Round 11:
+  avg_cpu: 1.13
+  peak_cpu: 26.23
+  min_cpu: 0.00
+  avg_mem: 1084.16
+  peak_mem: 1085.16
+  min_mem: 1083.16
+  avg_avail: 834.97
+  peak_avail: 869.32
+  min_avail: 801.80

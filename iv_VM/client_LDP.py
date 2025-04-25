@@ -116,7 +116,7 @@ def add_dp_noise(weights, epsilon, round_sensitivities, round_num, num_clients, 
 
     for i, weight in enumerate(weights):
         sensitivity = round_sensitivities.get(round_num, {}).get(i, 1e-5)  # default to a small value
-        noise_scale = sensitivity / (epsilon * np.sqrt(num_clients))
+        noise_scale = (sensitivity) / (epsilon * np.sqrt(num_clients))
 
         #print(f"\n-- Layer {i} --")
         #print(f"Sensitivity: {sensitivity:.4f}")

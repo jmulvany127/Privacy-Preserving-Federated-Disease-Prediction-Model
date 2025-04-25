@@ -1,0 +1,1146 @@
+2025-04-15 08:31:18.813465: I tensorflow/core/util/port.cc:110] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+2025-04-15 08:31:18.815225: I tensorflow/tsl/cuda/cudart_stub.cc:28] Could not find cuda drivers on your machine, GPU will not be used.
+2025-04-15 08:31:18.850942: I tensorflow/tsl/cuda/cudart_stub.cc:28] Could not find cuda drivers on your machine, GPU will not be used.
+2025-04-15 08:31:18.851339: I tensorflow/core/platform/cpu_feature_guard.cc:182] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 AVX512F AVX512_VNNI FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2025-04-15 08:31:19.411014: W tensorflow/compiler/tf2tensorrt/utils/py_utils.cc:38] TF-TRT Warning: Could not find TensorRT
+Waiting for clients to connect...
+Connected to ('127.0.0.1', 40882)
+Connected to ('127.0.0.1', 40892)
+
+--- Round 1/25 ---
+Round 1 - Accuracy: 32.33%
+F1 Score: 0.2463
+Confusion Matrix:
+[[ 79  21]
+ [182  18]]
+Classification Report:
+              precision    recall  f1-score   support
+
+         0.0     0.3027    0.7900    0.4377       100
+         1.0     0.4615    0.0900    0.1506       200
+
+    accuracy                         0.3233       300
+   macro avg     0.3821    0.4400    0.2942       300
+weighted avg     0.4086    0.3233    0.2463       300
+
+Round 1 duration: 16.03 seconds
+
+--- Round 2/25 ---
+Exception in thread Thread-8 (handle_client_communication)Exception in thread Thread-7 (handle_client_communication):
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/threading.py", line 1016, in _bootstrap_inner
+:
+Traceback (most recent call last):
+      File "/usr/lib/python3.10/threading.py", line 1016, in _bootstrap_inner
+    self.run()self.run()
+
+  File "/usr/lib/python3.10/threading.py", line 953, in run
+  File "/usr/lib/python3.10/threading.py", line 953, in run
+    self._target(*self._args, **self._kwargs)    self._target(*self._args, **self._kwargs)
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 90, in handle_client_communication
+
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 90, in handle_client_communication
+    sent_size = send_data(client_conn, global_weights)
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 129, in send_data
+    raise e
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 125, in send_data
+    sent_size = send_data(client_conn, global_weights)    sock.sendall(data_pickle)
+BrokenPipeError: [Errno 32] Broken pipe
+
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 129, in send_data
+    raise e
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 125, in send_data
+    sock.sendall(data_pickle)
+BrokenPipeError: [Errno 32] Broken pipe
+Round 2 - Accuracy: 32.33%
+F1 Score: 0.2463
+Confusion Matrix:
+[[ 79  21]
+ [182  18]]
+Classification Report:
+              precision    recall  f1-score   support
+
+         0.0     0.3027    0.7900    0.4377       100
+         1.0     0.4615    0.0900    0.1506       200
+
+    accuracy                         0.3233       300
+   macro avg     0.3821    0.4400    0.2942       300
+weighted avg     0.4086    0.3233    0.2463       300
+
+Round 2 duration: 1.00 seconds
+
+--- Round 3/25 ---
+Exception in thread Thread-11 (handle_client_communication):
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/threading.py", line 1016, in _bootstrap_inner
+    Exception in thread Thread-12 (handle_client_communication):
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/threading.py", line 1016, in _bootstrap_inner
+self.run()    
+self.run()  File "/usr/lib/python3.10/threading.py", line 953, in run
+
+      File "/usr/lib/python3.10/threading.py", line 953, in run
+self._target(*self._args, **self._kwargs)    
+self._target(*self._args, **self._kwargs)  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 90, in handle_client_communication
+
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 90, in handle_client_communication
+        sent_size = send_data(client_conn, global_weights)
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 129, in send_data
+sent_size = send_data(client_conn, global_weights)
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 129, in send_data
+        raise e
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 124, in send_data
+raise e
+    sock.sendall(header)
+BrokenPipeError: [Errno 32] Broken pipe
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 124, in send_data
+    sock.sendall(header)
+BrokenPipeError: [Errno 32] Broken pipe
+Round 3 - Accuracy: 32.33%
+F1 Score: 0.2463
+Confusion Matrix:
+[[ 79  21]
+ [182  18]]
+Classification Report:
+              precision    recall  f1-score   support
+
+         0.0     0.3027    0.7900    0.4377       100
+         1.0     0.4615    0.0900    0.1506       200
+
+    accuracy                         0.3233       300
+   macro avg     0.3821    0.4400    0.2942       300
+weighted avg     0.4086    0.3233    0.2463       300
+
+Round 3 duration: 1.00 seconds
+
+--- Round 4/25 ---
+Exception in thread Exception in thread Thread-15 (handle_client_communication):
+Thread-16 (handle_client_communication)Traceback (most recent call last):
+  File "/usr/lib/python3.10/threading.py", line 1016, in _bootstrap_inner
+    :
+self.run()Traceback (most recent call last):
+
+  File "/usr/lib/python3.10/threading.py", line 953, in run
+  File "/usr/lib/python3.10/threading.py", line 1016, in _bootstrap_inner
+    self._target(*self._args, **self._kwargs)
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 90, in handle_client_communication
+    self.run()    sent_size = send_data(client_conn, global_weights)
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 129, in send_data
+
+    raise e
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 124, in send_data
+    sock.sendall(header)
+BrokenPipeError: [Errno 32] Broken pipe
+  File "/usr/lib/python3.10/threading.py", line 953, in run
+    self._target(*self._args, **self._kwargs)
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 90, in handle_client_communication
+    sent_size = send_data(client_conn, global_weights)
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 129, in send_data
+    raise e
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 124, in send_data
+    sock.sendall(header)
+BrokenPipeError: [Errno 32] Broken pipe
+Round 4 - Accuracy: 32.33%
+F1 Score: 0.2463
+Confusion Matrix:
+[[ 79  21]
+ [182  18]]
+Classification Report:
+              precision    recall  f1-score   support
+
+         0.0     0.3027    0.7900    0.4377       100
+         1.0     0.4615    0.0900    0.1506       200
+
+    accuracy                         0.3233       300
+   macro avg     0.3821    0.4400    0.2942       300
+weighted avg     0.4086    0.3233    0.2463       300
+
+Round 4 duration: 1.00 seconds
+
+--- Round 5/25 ---
+Exception in thread Thread-19 (handle_client_communication):
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/threading.py", line 1016, in _bootstrap_inner
+Exception in thread Thread-20 (handle_client_communication):
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/threading.py", line 1016, in _bootstrap_inner
+        self.run()self.run()
+
+  File "/usr/lib/python3.10/threading.py", line 953, in run
+  File "/usr/lib/python3.10/threading.py", line 953, in run
+    self._target(*self._args, **self._kwargs)
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 90, in handle_client_communication
+    self._target(*self._args, **self._kwargs)
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 90, in handle_client_communication
+    sent_size = send_data(client_conn, global_weights)
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 129, in send_data
+    raise e
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 124, in send_data
+    sock.sendall(header)
+BrokenPipeError: [Errno 32] Broken pipe
+    sent_size = send_data(client_conn, global_weights)
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 129, in send_data
+    raise e
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 124, in send_data
+    sock.sendall(header)
+BrokenPipeError: [Errno 32] Broken pipe
+Round 5 - Accuracy: 32.33%
+F1 Score: 0.2463
+Confusion Matrix:
+[[ 79  21]
+ [182  18]]
+Classification Report:
+              precision    recall  f1-score   support
+
+         0.0     0.3027    0.7900    0.4377       100
+         1.0     0.4615    0.0900    0.1506       200
+
+    accuracy                         0.3233       300
+   macro avg     0.3821    0.4400    0.2942       300
+weighted avg     0.4086    0.3233    0.2463       300
+
+Round 5 duration: 1.00 seconds
+
+--- Round 6/25 ---
+Exception in thread Exception in thread Thread-23 (handle_client_communication)Thread-24 (handle_client_communication):
+:
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/threading.py", line 1016, in _bootstrap_inner
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/threading.py", line 1016, in _bootstrap_inner
+    self.run()
+  File "/usr/lib/python3.10/threading.py", line 953, in run
+        self.run()
+  File "/usr/lib/python3.10/threading.py", line 953, in run
+    self._target(*self._args, **self._kwargs)self._target(*self._args, **self._kwargs)
+
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 90, in handle_client_communication
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 90, in handle_client_communication
+        sent_size = send_data(client_conn, global_weights)sent_size = send_data(client_conn, global_weights)
+
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 129, in send_data
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 129, in send_data
+        raise eraise e
+
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 124, in send_data
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 124, in send_data
+        sock.sendall(header)sock.sendall(header)
+
+BrokenPipeError: BrokenPipeError[Errno 32] Broken pipe: 
+[Errno 32] Broken pipe
+Round 6 - Accuracy: 32.33%
+F1 Score: 0.2463
+Confusion Matrix:
+[[ 79  21]
+ [182  18]]
+Classification Report:
+              precision    recall  f1-score   support
+
+         0.0     0.3027    0.7900    0.4377       100
+         1.0     0.4615    0.0900    0.1506       200
+
+    accuracy                         0.3233       300
+   macro avg     0.3821    0.4400    0.2942       300
+weighted avg     0.4086    0.3233    0.2463       300
+
+Round 6 duration: 1.01 seconds
+
+--- Round 7/25 ---
+Exception in thread Thread-27 (handle_client_communication):
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/threading.py", line 1016, in _bootstrap_inner
+Exception in thread     Thread-28 (handle_client_communication)self.run():
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/threading.py", line 1016, in _bootstrap_inner
+
+    self.run()
+  File "/usr/lib/python3.10/threading.py", line 953, in run
+  File "/usr/lib/python3.10/threading.py", line 953, in run
+        self._target(*self._args, **self._kwargs)self._target(*self._args, **self._kwargs)
+
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 90, in handle_client_communication
+    sent_size = send_data(client_conn, global_weights)
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 129, in send_data
+      File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 90, in handle_client_communication
+raise e    sent_size = send_data(client_conn, global_weights)
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 129, in send_data
+
+    raise e
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 124, in send_data
+    sock.sendall(header)
+BrokenPipeError: [Errno 32] Broken pipe
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 124, in send_data
+    sock.sendall(header)
+BrokenPipeError: [Errno 32] Broken pipe
+Round 7 - Accuracy: 32.33%
+F1 Score: 0.2463
+Confusion Matrix:
+[[ 79  21]
+ [182  18]]
+Classification Report:
+              precision    recall  f1-score   support
+
+         0.0     0.3027    0.7900    0.4377       100
+         1.0     0.4615    0.0900    0.1506       200
+
+    accuracy                         0.3233       300
+   macro avg     0.3821    0.4400    0.2942       300
+weighted avg     0.4086    0.3233    0.2463       300
+
+Round 7 duration: 1.01 seconds
+
+--- Round 8/25 ---
+Exception in thread Thread-31 (handle_client_communication)Exception in thread :
+Thread-32 (handle_client_communication):
+Traceback (most recent call last):
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/threading.py", line 1016, in _bootstrap_inner
+  File "/usr/lib/python3.10/threading.py", line 1016, in _bootstrap_inner
+        self.run()
+  File "/usr/lib/python3.10/threading.py", line 953, in run
+self.run()
+  File "/usr/lib/python3.10/threading.py", line 953, in run
+        self._target(*self._args, **self._kwargs)
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 90, in handle_client_communication
+    sent_size = send_data(client_conn, global_weights)
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 129, in send_data
+    raise e
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 124, in send_data
+self._target(*self._args, **self._kwargs)
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 90, in handle_client_communication
+    sock.sendall(header)
+BrokenPipeError: [Errno 32] Broken pipe
+    sent_size = send_data(client_conn, global_weights)
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 129, in send_data
+    raise e
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 124, in send_data
+    sock.sendall(header)
+BrokenPipeError: [Errno 32] Broken pipe
+Round 8 - Accuracy: 32.33%
+F1 Score: 0.2463
+Confusion Matrix:
+[[ 79  21]
+ [182  18]]
+Classification Report:
+              precision    recall  f1-score   support
+
+         0.0     0.3027    0.7900    0.4377       100
+         1.0     0.4615    0.0900    0.1506       200
+
+    accuracy                         0.3233       300
+   macro avg     0.3821    0.4400    0.2942       300
+weighted avg     0.4086    0.3233    0.2463       300
+
+Round 8 duration: 1.00 seconds
+
+--- Round 9/25 ---
+Exception in thread Thread-35 (handle_client_communication)Exception in thread :
+Thread-36 (handle_client_communication)Traceback (most recent call last):
+:
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/threading.py", line 1016, in _bootstrap_inner
+  File "/usr/lib/python3.10/threading.py", line 1016, in _bootstrap_inner
+    self.run()
+  File "/usr/lib/python3.10/threading.py", line 953, in run
+    self.run()    
+self._target(*self._args, **self._kwargs)  File "/usr/lib/python3.10/threading.py", line 953, in run
+
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 90, in handle_client_communication
+        sent_size = send_data(client_conn, global_weights)
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 129, in send_data
+self._target(*self._args, **self._kwargs)    raise e
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 124, in send_data
+
+    sock.sendall(header)
+BrokenPipeError: [Errno 32] Broken pipe
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 90, in handle_client_communication
+    sent_size = send_data(client_conn, global_weights)
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 129, in send_data
+    raise e
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 124, in send_data
+    sock.sendall(header)
+BrokenPipeError: [Errno 32] Broken pipe
+Round 9 - Accuracy: 32.33%
+F1 Score: 0.2463
+Confusion Matrix:
+[[ 79  21]
+ [182  18]]
+Classification Report:
+              precision    recall  f1-score   support
+
+         0.0     0.3027    0.7900    0.4377       100
+         1.0     0.4615    0.0900    0.1506       200
+
+    accuracy                         0.3233       300
+   macro avg     0.3821    0.4400    0.2942       300
+weighted avg     0.4086    0.3233    0.2463       300
+
+Round 9 duration: 1.00 seconds
+
+--- Round 10/25 ---
+Exception in thread Exception in thread Thread-40 (handle_client_communication)Thread-39 (handle_client_communication):
+:
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/threading.py", line 1016, in _bootstrap_inner
+    Traceback (most recent call last):
+self.run()  File "/usr/lib/python3.10/threading.py", line 1016, in _bootstrap_inner
+
+      File "/usr/lib/python3.10/threading.py", line 953, in run
+self.run()
+  File "/usr/lib/python3.10/threading.py", line 953, in run
+        self._target(*self._args, **self._kwargs)
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 90, in handle_client_communication
+self._target(*self._args, **self._kwargs)    
+sent_size = send_data(client_conn, global_weights)  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 90, in handle_client_communication
+
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 129, in send_data
+    raise e
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 124, in send_data
+    sent_size = send_data(client_conn, global_weights)
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 129, in send_data
+    sock.sendall(header)
+BrokenPipeError: [Errno 32] Broken pipe
+    raise e
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 124, in send_data
+    sock.sendall(header)
+BrokenPipeError: [Errno 32] Broken pipe
+Round 10 - Accuracy: 32.33%
+F1 Score: 0.2463
+Confusion Matrix:
+[[ 79  21]
+ [182  18]]
+Classification Report:
+              precision    recall  f1-score   support
+
+         0.0     0.3027    0.7900    0.4377       100
+         1.0     0.4615    0.0900    0.1506       200
+
+    accuracy                         0.3233       300
+   macro avg     0.3821    0.4400    0.2942       300
+weighted avg     0.4086    0.3233    0.2463       300
+
+Round 10 duration: 1.00 seconds
+
+--- Round 11/25 ---
+Exception in thread Exception in thread Thread-43 (handle_client_communication)Thread-44 (handle_client_communication):
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/threading.py", line 1016, in _bootstrap_inner
+:
+    Traceback (most recent call last):
+self.run()  File "/usr/lib/python3.10/threading.py", line 1016, in _bootstrap_inner
+    
+self.run()  File "/usr/lib/python3.10/threading.py", line 953, in run
+
+      File "/usr/lib/python3.10/threading.py", line 953, in run
+self._target(*self._args, **self._kwargs)
+      File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 90, in handle_client_communication
+self._target(*self._args, **self._kwargs)
+      File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 90, in handle_client_communication
+sent_size = send_data(client_conn, global_weights)
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 129, in send_data
+    raise e
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 124, in send_data
+    sock.sendall(header)
+BrokenPipeError: [Errno 32] Broken pipe
+    sent_size = send_data(client_conn, global_weights)
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 129, in send_data
+    raise e
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 124, in send_data
+    sock.sendall(header)
+BrokenPipeError: [Errno 32] Broken pipe
+Round 11 - Accuracy: 32.33%
+F1 Score: 0.2463
+Confusion Matrix:
+[[ 79  21]
+ [182  18]]
+Classification Report:
+              precision    recall  f1-score   support
+
+         0.0     0.3027    0.7900    0.4377       100
+         1.0     0.4615    0.0900    0.1506       200
+
+    accuracy                         0.3233       300
+   macro avg     0.3821    0.4400    0.2942       300
+weighted avg     0.4086    0.3233    0.2463       300
+
+Round 11 duration: 1.00 seconds
+
+--- Round 12/25 ---
+Exception in thread Thread-47 (handle_client_communication):
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/threading.py", line 1016, in _bootstrap_inner
+Exception in thread Thread-48 (handle_client_communication):
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/threading.py", line 1016, in _bootstrap_inner
+        self.run()self.run()
+
+  File "/usr/lib/python3.10/threading.py", line 953, in run
+  File "/usr/lib/python3.10/threading.py", line 953, in run
+    self._target(*self._args, **self._kwargs)
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 90, in handle_client_communication
+        sent_size = send_data(client_conn, global_weights)
+self._target(*self._args, **self._kwargs)  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 129, in send_data
+
+    raise e
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 124, in send_data
+    sock.sendall(header)
+BrokenPipeError: [Errno 32] Broken pipe
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 90, in handle_client_communication
+    sent_size = send_data(client_conn, global_weights)
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 129, in send_data
+    raise e
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 124, in send_data
+    sock.sendall(header)
+BrokenPipeError: [Errno 32] Broken pipe
+Round 12 - Accuracy: 32.33%
+F1 Score: 0.2463
+Confusion Matrix:
+[[ 79  21]
+ [182  18]]
+Classification Report:
+              precision    recall  f1-score   support
+
+         0.0     0.3027    0.7900    0.4377       100
+         1.0     0.4615    0.0900    0.1506       200
+
+    accuracy                         0.3233       300
+   macro avg     0.3821    0.4400    0.2942       300
+weighted avg     0.4086    0.3233    0.2463       300
+
+Round 12 duration: 1.00 seconds
+
+--- Round 13/25 ---
+Exception in thread Thread-51 (handle_client_communication):
+Traceback (most recent call last):
+Exception in thread   File "/usr/lib/python3.10/threading.py", line 1016, in _bootstrap_inner
+Thread-52 (handle_client_communication):
+    self.run()Traceback (most recent call last):
+  File "/usr/lib/python3.10/threading.py", line 1016, in _bootstrap_inner
+    self.run()
+  File "/usr/lib/python3.10/threading.py", line 953, in run
+
+      File "/usr/lib/python3.10/threading.py", line 953, in run
+self._target(*self._args, **self._kwargs)    
+self._target(*self._args, **self._kwargs)  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 90, in handle_client_communication
+
+      File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 90, in handle_client_communication
+sent_size = send_data(client_conn, global_weights)    sent_size = send_data(client_conn, global_weights)
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 129, in send_data
+    raise e
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 124, in send_data
+    sock.sendall(header)
+BrokenPipeError: [Errno 32] Broken pipe
+
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 129, in send_data
+    raise e
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 124, in send_data
+    sock.sendall(header)
+BrokenPipeError: [Errno 32] Broken pipe
+Round 13 - Accuracy: 32.33%
+F1 Score: 0.2463
+Confusion Matrix:
+[[ 79  21]
+ [182  18]]
+Classification Report:
+              precision    recall  f1-score   support
+
+         0.0     0.3027    0.7900    0.4377       100
+         1.0     0.4615    0.0900    0.1506       200
+
+    accuracy                         0.3233       300
+   macro avg     0.3821    0.4400    0.2942       300
+weighted avg     0.4086    0.3233    0.2463       300
+
+Round 13 duration: 1.00 seconds
+
+--- Round 14/25 ---
+Exception in thread Thread-55 (handle_client_communication):
+Traceback (most recent call last):
+Exception in thread   File "/usr/lib/python3.10/threading.py", line 1016, in _bootstrap_inner
+Thread-56 (handle_client_communication)    self.run()
+  File "/usr/lib/python3.10/threading.py", line 953, in run
+:
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/threading.py", line 1016, in _bootstrap_inner
+        self._target(*self._args, **self._kwargs)
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 90, in handle_client_communication
+self.run()
+  File "/usr/lib/python3.10/threading.py", line 953, in run
+    sent_size = send_data(client_conn, global_weights)
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 129, in send_data
+    raise e
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 124, in send_data
+    sock.sendall(header)    
+self._target(*self._args, **self._kwargs)BrokenPipeError
+: [Errno 32] Broken pipe  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 90, in handle_client_communication
+
+    sent_size = send_data(client_conn, global_weights)
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 129, in send_data
+    raise e
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 124, in send_data
+    sock.sendall(header)
+BrokenPipeError: [Errno 32] Broken pipe
+Round 14 - Accuracy: 32.33%
+F1 Score: 0.2463
+Confusion Matrix:
+[[ 79  21]
+ [182  18]]
+Classification Report:
+              precision    recall  f1-score   support
+
+         0.0     0.3027    0.7900    0.4377       100
+         1.0     0.4615    0.0900    0.1506       200
+
+    accuracy                         0.3233       300
+   macro avg     0.3821    0.4400    0.2942       300
+weighted avg     0.4086    0.3233    0.2463       300
+
+Round 14 duration: 1.00 seconds
+
+--- Round 15/25 ---
+Exception in thread Thread-59 (handle_client_communication):
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/threading.py", line 1016, in _bootstrap_inner
+Exception in thread Thread-60 (handle_client_communication):
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/threading.py", line 1016, in _bootstrap_inner
+    self.run()    
+self.run()  File "/usr/lib/python3.10/threading.py", line 953, in run
+
+    self._target(*self._args, **self._kwargs)
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 90, in handle_client_communication
+  File "/usr/lib/python3.10/threading.py", line 953, in run
+    self._target(*self._args, **self._kwargs)    sent_size = send_data(client_conn, global_weights)
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 129, in send_data
+    raise e
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 124, in send_data
+    
+sock.sendall(header)  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 90, in handle_client_communication
+
+BrokenPipeError: [Errno 32] Broken pipe
+    sent_size = send_data(client_conn, global_weights)
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 129, in send_data
+    raise e
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 124, in send_data
+    sock.sendall(header)
+BrokenPipeError: [Errno 32] Broken pipe
+Round 15 - Accuracy: 32.33%
+F1 Score: 0.2463
+Confusion Matrix:
+[[ 79  21]
+ [182  18]]
+Classification Report:
+              precision    recall  f1-score   support
+
+         0.0     0.3027    0.7900    0.4377       100
+         1.0     0.4615    0.0900    0.1506       200
+
+    accuracy                         0.3233       300
+   macro avg     0.3821    0.4400    0.2942       300
+weighted avg     0.4086    0.3233    0.2463       300
+
+Round 15 duration: 1.00 seconds
+
+--- Round 16/25 ---
+Exception in thread Exception in thread Thread-63 (handle_client_communication)Thread-64 (handle_client_communication):
+:
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/threading.py", line 1016, in _bootstrap_inner
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/threading.py", line 1016, in _bootstrap_inner
+    self.run()
+  File "/usr/lib/python3.10/threading.py", line 953, in run
+    self.run()
+    self._target(*self._args, **self._kwargs)
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 90, in handle_client_communication
+    sent_size = send_data(client_conn, global_weights)
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 129, in send_data
+    raise e
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 124, in send_data
+  File "/usr/lib/python3.10/threading.py", line 953, in run
+    self._target(*self._args, **self._kwargs)
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 90, in handle_client_communication
+    sent_size = send_data(client_conn, global_weights)
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 129, in send_data
+    raise e
+    sock.sendall(header)
+BrokenPipeError: [Errno 32] Broken pipe
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 124, in send_data
+    sock.sendall(header)
+BrokenPipeError: [Errno 32] Broken pipe
+Round 16 - Accuracy: 32.33%
+F1 Score: 0.2463
+Confusion Matrix:
+[[ 79  21]
+ [182  18]]
+Classification Report:
+              precision    recall  f1-score   support
+
+         0.0     0.3027    0.7900    0.4377       100
+         1.0     0.4615    0.0900    0.1506       200
+
+    accuracy                         0.3233       300
+   macro avg     0.3821    0.4400    0.2942       300
+weighted avg     0.4086    0.3233    0.2463       300
+
+Round 16 duration: 1.00 seconds
+
+--- Round 17/25 ---
+Exception in thread Thread-67 (handle_client_communication):
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/threading.py", line 1016, in _bootstrap_inner
+    Exception in thread self.run()Thread-68 (handle_client_communication)
+:
+  File "/usr/lib/python3.10/threading.py", line 953, in run
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/threading.py", line 1016, in _bootstrap_inner
+    self._target(*self._args, **self._kwargs)    self.run()
+  File "/usr/lib/python3.10/threading.py", line 953, in run
+    
+self._target(*self._args, **self._kwargs)  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 90, in handle_client_communication
+
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 90, in handle_client_communication
+    sent_size = send_data(client_conn, global_weights)    sent_size = send_data(client_conn, global_weights)
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 129, in send_data
+    raise e
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 124, in send_data
+    sock.sendall(header)
+BrokenPipeError: [Errno 32] Broken pipe
+
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 129, in send_data
+    raise e
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 124, in send_data
+    sock.sendall(header)
+BrokenPipeError: [Errno 32] Broken pipe
+Round 17 - Accuracy: 32.33%
+F1 Score: 0.2463
+Confusion Matrix:
+[[ 79  21]
+ [182  18]]
+Classification Report:
+              precision    recall  f1-score   support
+
+         0.0     0.3027    0.7900    0.4377       100
+         1.0     0.4615    0.0900    0.1506       200
+
+    accuracy                         0.3233       300
+   macro avg     0.3821    0.4400    0.2942       300
+weighted avg     0.4086    0.3233    0.2463       300
+
+Round 17 duration: 1.00 seconds
+
+--- Round 18/25 ---
+Exception in thread Exception in thread Thread-71 (handle_client_communication)Thread-72 (handle_client_communication):
+:
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/threading.py", line 1016, in _bootstrap_inner
+    Traceback (most recent call last):
+self.run()  File "/usr/lib/python3.10/threading.py", line 1016, in _bootstrap_inner
+
+  File "/usr/lib/python3.10/threading.py", line 953, in run
+    self.run()
+      File "/usr/lib/python3.10/threading.py", line 953, in run
+self._target(*self._args, **self._kwargs)    
+self._target(*self._args, **self._kwargs)  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 90, in handle_client_communication
+
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 90, in handle_client_communication
+    sent_size = send_data(client_conn, global_weights)    sent_size = send_data(client_conn, global_weights)
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 129, in send_data
+    raise e
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 124, in send_data
+    sock.sendall(header)
+BrokenPipeError: 
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 129, in send_data
+[Errno 32] Broken pipe
+    raise e
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 124, in send_data
+    sock.sendall(header)
+BrokenPipeError: [Errno 32] Broken pipe
+Round 18 - Accuracy: 32.33%
+F1 Score: 0.2463
+Confusion Matrix:
+[[ 79  21]
+ [182  18]]
+Classification Report:
+              precision    recall  f1-score   support
+
+         0.0     0.3027    0.7900    0.4377       100
+         1.0     0.4615    0.0900    0.1506       200
+
+    accuracy                         0.3233       300
+   macro avg     0.3821    0.4400    0.2942       300
+weighted avg     0.4086    0.3233    0.2463       300
+
+Round 18 duration: 1.00 seconds
+
+--- Round 19/25 ---
+Exception in thread Thread-75 (handle_client_communication):
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/threading.py", line 1016, in _bootstrap_inner
+    Exception in thread self.run()Thread-76 (handle_client_communication):
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/threading.py", line 1016, in _bootstrap_inner
+
+  File "/usr/lib/python3.10/threading.py", line 953, in run
+        self.run()
+  File "/usr/lib/python3.10/threading.py", line 953, in run
+self._target(*self._args, **self._kwargs)
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 90, in handle_client_communication
+        sent_size = send_data(client_conn, global_weights)self._target(*self._args, **self._kwargs)
+
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 129, in send_data
+    raise e
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 124, in send_data
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 90, in handle_client_communication
+    sent_size = send_data(client_conn, global_weights)
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 129, in send_data
+    sock.sendall(header)
+BrokenPipeError: [Errno 32] Broken pipe
+    raise e
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 124, in send_data
+    sock.sendall(header)
+BrokenPipeError: [Errno 32] Broken pipe
+Round 19 - Accuracy: 32.33%
+F1 Score: 0.2463
+Confusion Matrix:
+[[ 79  21]
+ [182  18]]
+Classification Report:
+              precision    recall  f1-score   support
+
+         0.0     0.3027    0.7900    0.4377       100
+         1.0     0.4615    0.0900    0.1506       200
+
+    accuracy                         0.3233       300
+   macro avg     0.3821    0.4400    0.2942       300
+weighted avg     0.4086    0.3233    0.2463       300
+
+Round 19 duration: 1.00 seconds
+
+--- Round 20/25 ---
+Exception in thread Thread-79 (handle_client_communication)Exception in thread :
+Thread-80 (handle_client_communication)Traceback (most recent call last):
+  File "/usr/lib/python3.10/threading.py", line 1016, in _bootstrap_inner
+    self.run()
+  File "/usr/lib/python3.10/threading.py", line 953, in run
+:
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/threading.py", line 1016, in _bootstrap_inner
+        self.run()
+  File "/usr/lib/python3.10/threading.py", line 953, in run
+self._target(*self._args, **self._kwargs)    
+self._target(*self._args, **self._kwargs)  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 90, in handle_client_communication
+
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 90, in handle_client_communication
+    sent_size = send_data(client_conn, global_weights)
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 129, in send_data
+    raise e
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 124, in send_data
+    sock.sendall(header)
+BrokenPipeError: [Errno 32] Broken pipe
+    sent_size = send_data(client_conn, global_weights)
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 129, in send_data
+    raise e
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 124, in send_data
+    sock.sendall(header)
+BrokenPipeError: [Errno 32] Broken pipe
+Round 20 - Accuracy: 32.33%
+F1 Score: 0.2463
+Confusion Matrix:
+[[ 79  21]
+ [182  18]]
+Classification Report:
+              precision    recall  f1-score   support
+
+         0.0     0.3027    0.7900    0.4377       100
+         1.0     0.4615    0.0900    0.1506       200
+
+    accuracy                         0.3233       300
+   macro avg     0.3821    0.4400    0.2942       300
+weighted avg     0.4086    0.3233    0.2463       300
+
+Round 20 duration: 1.00 seconds
+
+--- Round 21/25 ---
+Exception in thread Thread-83 (handle_client_communication)Exception in thread :
+Thread-84 (handle_client_communication)Traceback (most recent call last):
+:
+  File "/usr/lib/python3.10/threading.py", line 1016, in _bootstrap_inner
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/threading.py", line 1016, in _bootstrap_inner
+    self.run()    
+self.run()  File "/usr/lib/python3.10/threading.py", line 953, in run
+
+  File "/usr/lib/python3.10/threading.py", line 953, in run
+        self._target(*self._args, **self._kwargs)self._target(*self._args, **self._kwargs)
+
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 90, in handle_client_communication
+    sent_size = send_data(client_conn, global_weights)
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 129, in send_data
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 90, in handle_client_communication
+    sent_size = send_data(client_conn, global_weights)
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 129, in send_data
+    raise e
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 124, in send_data
+    sock.sendall(header)
+BrokenPipeError: [Errno 32] Broken pipe
+    raise e
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 124, in send_data
+    sock.sendall(header)
+BrokenPipeError: [Errno 32] Broken pipe
+Round 21 - Accuracy: 32.33%
+F1 Score: 0.2463
+Confusion Matrix:
+[[ 79  21]
+ [182  18]]
+Classification Report:
+              precision    recall  f1-score   support
+
+         0.0     0.3027    0.7900    0.4377       100
+         1.0     0.4615    0.0900    0.1506       200
+
+    accuracy                         0.3233       300
+   macro avg     0.3821    0.4400    0.2942       300
+weighted avg     0.4086    0.3233    0.2463       300
+
+Round 21 duration: 1.00 seconds
+
+--- Round 22/25 ---
+Exception in thread Thread-87 (handle_client_communication)Exception in thread :
+Thread-88 (handle_client_communication)Traceback (most recent call last):
+:
+  File "/usr/lib/python3.10/threading.py", line 1016, in _bootstrap_inner
+Traceback (most recent call last):
+    self.run()
+  File "/usr/lib/python3.10/threading.py", line 953, in run
+  File "/usr/lib/python3.10/threading.py", line 1016, in _bootstrap_inner
+    self._target(*self._args, **self._kwargs)
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 90, in handle_client_communication
+        sent_size = send_data(client_conn, global_weights)self.run()
+
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 129, in send_data
+  File "/usr/lib/python3.10/threading.py", line 953, in run
+    raise e
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 124, in send_data
+        sock.sendall(header)
+BrokenPipeError: [Errno 32] Broken pipe
+self._target(*self._args, **self._kwargs)
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 90, in handle_client_communication
+    sent_size = send_data(client_conn, global_weights)
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 129, in send_data
+    raise e
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 124, in send_data
+    sock.sendall(header)
+BrokenPipeError: [Errno 32] Broken pipe
+Round 22 - Accuracy: 32.33%
+F1 Score: 0.2463
+Confusion Matrix:
+[[ 79  21]
+ [182  18]]
+Classification Report:
+              precision    recall  f1-score   support
+
+         0.0     0.3027    0.7900    0.4377       100
+         1.0     0.4615    0.0900    0.1506       200
+
+    accuracy                         0.3233       300
+   macro avg     0.3821    0.4400    0.2942       300
+weighted avg     0.4086    0.3233    0.2463       300
+
+Round 22 duration: 1.00 seconds
+
+--- Round 23/25 ---
+Exception in thread Thread-91 (handle_client_communication)Exception in thread :
+Thread-92 (handle_client_communication)Traceback (most recent call last):
+  File "/usr/lib/python3.10/threading.py", line 1016, in _bootstrap_inner
+    :
+self.run()Traceback (most recent call last):
+
+  File "/usr/lib/python3.10/threading.py", line 1016, in _bootstrap_inner
+  File "/usr/lib/python3.10/threading.py", line 953, in run
+        self._target(*self._args, **self._kwargs)self.run()
+
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 90, in handle_client_communication
+    sent_size = send_data(client_conn, global_weights)  File "/usr/lib/python3.10/threading.py", line 953, in run
+    self._target(*self._args, **self._kwargs)
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 129, in send_data
+
+    raise e
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 124, in send_data
+      File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 90, in handle_client_communication
+    sock.sendall(header)sent_size = send_data(client_conn, global_weights)
+
+BrokenPipeError: [Errno 32] Broken pipe
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 129, in send_data
+    raise e
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 124, in send_data
+    sock.sendall(header)
+BrokenPipeError: [Errno 32] Broken pipe
+Round 23 - Accuracy: 32.33%
+F1 Score: 0.2463
+Confusion Matrix:
+[[ 79  21]
+ [182  18]]
+Classification Report:
+              precision    recall  f1-score   support
+
+         0.0     0.3027    0.7900    0.4377       100
+         1.0     0.4615    0.0900    0.1506       200
+
+    accuracy                         0.3233       300
+   macro avg     0.3821    0.4400    0.2942       300
+weighted avg     0.4086    0.3233    0.2463       300
+
+Round 23 duration: 1.00 seconds
+
+--- Round 24/25 ---
+Exception in thread Thread-95 (handle_client_communication)Exception in thread :
+Thread-96 (handle_client_communication)Traceback (most recent call last):
+  File "/usr/lib/python3.10/threading.py", line 1016, in _bootstrap_inner
+:
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/threading.py", line 1016, in _bootstrap_inner
+    self.run()    
+self.run()  File "/usr/lib/python3.10/threading.py", line 953, in run
+
+  File "/usr/lib/python3.10/threading.py", line 953, in run
+    self._target(*self._args, **self._kwargs)
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 90, in handle_client_communication
+    sent_size = send_data(client_conn, global_weights)
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 129, in send_data
+        self._target(*self._args, **self._kwargs)raise e
+
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 90, in handle_client_communication
+    sent_size = send_data(client_conn, global_weights)
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 129, in send_data
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 124, in send_data
+    sock.sendall(header)
+BrokenPipeError: [Errno 32] Broken pipe
+    raise e
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 124, in send_data
+    sock.sendall(header)
+BrokenPipeError: [Errno 32] Broken pipe
+Round 24 - Accuracy: 32.33%
+F1 Score: 0.2463
+Confusion Matrix:
+[[ 79  21]
+ [182  18]]
+Classification Report:
+              precision    recall  f1-score   support
+
+         0.0     0.3027    0.7900    0.4377       100
+         1.0     0.4615    0.0900    0.1506       200
+
+    accuracy                         0.3233       300
+   macro avg     0.3821    0.4400    0.2942       300
+weighted avg     0.4086    0.3233    0.2463       300
+
+Round 24 duration: 1.00 seconds
+
+--- Round 25/25 ---
+Exception in thread Thread-99 (handle_client_communication):
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/threading.py", line 1016, in _bootstrap_inner
+Exception in thread Thread-100 (handle_client_communication):
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/threading.py", line 1016, in _bootstrap_inner
+    self.run()
+  File "/usr/lib/python3.10/threading.py", line 953, in run
+    self._target(*self._args, **self._kwargs)
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 90, in handle_client_communication
+    self.run()
+  File "/usr/lib/python3.10/threading.py", line 953, in run
+    sent_size = send_data(client_conn, global_weights)
+    self._target(*self._args, **self._kwargs)  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 129, in send_data
+    raise e
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 124, in send_data
+
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 90, in handle_client_communication
+    sent_size = send_data(client_conn, global_weights)
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 129, in send_data
+    raise e
+  File "/home/jmulvany/Thesis_BU/iv_VM/server_LDP.py", line 124, in send_data
+    sock.sendall(header)    
+BrokenPipeError: [Errno 32] Broken pipe
+sock.sendall(header)
+BrokenPipeError: [Errno 32] Broken pipe
+Round 25 - Accuracy: 32.33%
+F1 Score: 0.2463
+Confusion Matrix:
+[[ 79  21]
+ [182  18]]
+Classification Report:
+              precision    recall  f1-score   support
+
+         0.0     0.3027    0.7900    0.4377       100
+         1.0     0.4615    0.0900    0.1506       200
+
+    accuracy                         0.3233       300
+   macro avg     0.3821    0.4400    0.2942       300
+weighted avg     0.4086    0.3233    0.2463       300
+
+Round 25 duration: 1.00 seconds
+
+=== Timing Report ===
+Total training time: 40.12 seconds
+Average time per round: 1.60 seconds
+Average time per round per client: 0.80 seconds
+Round durations:
+  Round 1: 16.03 seconds
+  Round 2: 1.00 seconds
+  Round 3: 1.00 seconds
+  Round 4: 1.00 seconds
+  Round 5: 1.00 seconds
+  Round 6: 1.01 seconds
+  Round 7: 1.01 seconds
+  Round 8: 1.00 seconds
+  Round 9: 1.00 seconds
+  Round 10: 1.00 seconds
+  Round 11: 1.00 seconds
+  Round 12: 1.00 seconds
+  Round 13: 1.00 seconds
+  Round 14: 1.00 seconds
+  Round 15: 1.00 seconds
+  Round 16: 1.00 seconds
+  Round 17: 1.00 seconds
+  Round 18: 1.00 seconds
+  Round 19: 1.00 seconds
+  Round 20: 1.00 seconds
+  Round 21: 1.00 seconds
+  Round 22: 1.00 seconds
+  Round 23: 1.00 seconds
+  Round 24: 1.00 seconds
+  Round 25: 1.00 seconds
+
+=== Communication Overhead Report ===
+Summary of Communication:
+  Total Transferred: 15,185,804 bytes
+  Total Sent: 15,185,804 bytes
+  Total Received: 0 bytes
+  Avg Sent per Client (Total): 7,592,902.00 bytes
+  Avg Received per Client (Total): 0.00 bytes
+  Avg Sent per Client per Round: 303,716.08 bytes
+  Avg Received per Client per Round: 0.00 bytes
+
+=== Resource Usage Report ===
+CPU Usage:
+  Average of averages: 20.27%
+  Overall Peak: 24.73%
+  Overall Min: 0.00%
+  Average per round Peak: 21.15%
+  Average per round Min: 20.18%
+Memory Usage:
+  Average of averages: 994.96 MB
+  Overall Peak: 1120.30 MB
+  Overall Min: 595.88 MB
+  Average per round Peak: 1001.31 MB
+  Average per round Min: 993.50 MB
+Available Memory:
+  Average of averages: 3853.01 MB
+  Overall Peak: 4105.24 MB
+  Overall Min: 2846.80 MB
+  Average per round Peak: 3877.89 MB
+  Average per round Min: 3847.38 MB
+
+Training complete.

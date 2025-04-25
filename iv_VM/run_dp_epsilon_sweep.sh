@@ -3,7 +3,7 @@
 # === Experiment Settings ===
 EXPERIMENT_NAME="exp_dp_epsilon_sweep"
 NUM_CLIENTS=2
-REPEATS=1
+REPEATS=8
 SLEEP_BETWEEN_RUNS=60
 PORT=65432
 
@@ -19,7 +19,7 @@ wait_for_port() {
 }
 
 # === DP Epsilon Values ===
-EPSILONS=(0.1 1 3 8)
+EPSILONS=(8)
 
 # === CKKS Default Parameters ===
 POLY_DEGREE=8192
