@@ -8,22 +8,17 @@ import argparse
 from sklearn.model_selection import train_test_split
 from skimage.transform import resize
 from matplotlib import image as img
-from CNN import *
-from utils import *
+from b_CNN import *
+from b_utils import *
 import warnings
 import csv
-import psutil
-import tracemalloc
-import gc
-import time
 import threading  # For sampling threads
 import tenseal as ts
 import pandas as pd
 from datetime import datetime
 
 
-
-
+#Load precomputed average layer update norms per training round from a CSV to dynamically adjust DP noise scaling
 def load_layer_sensitivities(csv_path):
     df = pd.read_csv(csv_path)
     round_to_layer_sens = {}
@@ -35,7 +30,8 @@ def load_layer_sensitivities(csv_path):
     return round_to_layer_sens
 layer_sensitivity_dict = load_layer_sensitivities("layer_update_avgs_1.csv")
 
-# Define a helper function or mapping for dynamic threshold:
+
+#Return clipping threshold(based on empirical training behaviors) for a given training round
 def get_dynamic_threshold(round_num):
 
     thresholds = {
@@ -48,34 +44,15 @@ def get_dynamic_threshold(round_num):
         7: 30000000+3*75000000,
         8: 25000000+3*65000000,
         9: 22000000+3*60000000,
-        # From round 10 onward, threshold remains constant:
+        # From round 10 onward threshold remains constant
     }
     if round_num in thresholds:
         return thresholds[round_num]
     else:
-        return 22000000+3*60000000  # This is the threshold for round 10 onward
+        return 22000000+3*60000000  # threshold for round 10 onward
     
-
-
-# Function to sample Memory usage and available memory during training
-def sample_memory_usage(stop_event, mem_usage_list, mem_avail_list):
-    """
-    Polls the process's memory usage and the system's available memory every second,
-    appending the values (in MB) to mem_usage_list and mem_avail_list respectively,
-    until stop_event is set.
-    """
-    process = psutil.Process(os.getpid())
-    while not stop_event.is_set():
-        # Memory usage of this process (in MB)
-        mem_usage = process.memory_info().rss / (1024 * 1024)
-        # Available system memory (in MB)
-        mem_avail = psutil.virtual_memory().available / (1024 * 1024)
-        mem_usage_list.append(mem_usage)
-        mem_avail_list.append(mem_avail)
-        time.sleep(1)
-        
+# Encrypts flattened weight tensors using the TenSEAL CKKS vector encryption
 def encrypt_weights(weights, ts_context):
-
     encrypted_weights = []
     for weight in weights:
         flat_weight = weight.flatten().tolist()
@@ -83,8 +60,7 @@ def encrypt_weights(weights, ts_context):
         encrypted_weights.append(enc_weight.serialize())
     return encrypted_weights
 
-
-
+#clip weight update (difference) norm if it exceeds a dynamic threshold
 def clip_weight_update(old, new, round_num):
     threshold = get_dynamic_threshold(round_num)
     update = new - old
@@ -93,7 +69,7 @@ def clip_weight_update(old, new, round_num):
         update = update * (threshold / norm)
     return old + update
 
-
+#Appends perlayer average weight update norms and stds to a CSV file(for setting thresholds) - not used as experiments already carried out
 def log_weight_update_stats(round_number, norms, stds, shapes, csv_path="layer_update_avgs.csv"):
     if args.client_id == 0:
         file_exists = os.path.isfile(csv_path)
@@ -105,11 +81,9 @@ def log_weight_update_stats(round_number, norms, stds, shapes, csv_path="layer_u
                 writer.writerow([round_number, i, norm, std, shape])
 
 
-   
+
+# Adds DP noise to each weight tensor using round-specific, layer-specific sensitivities
 def add_dp_noise(weights, epsilon, round_sensitivities, round_num, num_clients, noise_type='laplace'):
-    """
-    Adds DP noise to each weight tensor using round-specific, layer-specific sensitivities.
-    """
     noisy_weights = []
     print(f"\n=== DP Noise Injection (Round {round_num}) ===")
     print(f"Epsilon: {epsilon}, Noise Type: {noise_type}")
@@ -117,10 +91,6 @@ def add_dp_noise(weights, epsilon, round_sensitivities, round_num, num_clients, 
     for i, weight in enumerate(weights):
         sensitivity = round_sensitivities.get(round_num, {}).get(i, 1e-5)  # default to a small value
         noise_scale = (sensitivity) / (epsilon * np.sqrt(num_clients))
-
-        #print(f"\n-- Layer {i} --")
-        #print(f"Sensitivity: {sensitivity:.4f}")
-        #print(f"Noise Scale: {noise_scale:.4f}")
 
         if noise_type == 'laplace':
             noise = np.random.laplace(loc=0.0, scale=noise_scale, size=weight.shape)
@@ -132,7 +102,6 @@ def add_dp_noise(weights, epsilon, round_sensitivities, round_num, num_clients, 
         noisy_weight = weight + noise
         noisy_weights.append(noisy_weight)
 
-    #print("=== End of Noise Injection ===\n")
     return noisy_weights
 
 
@@ -165,31 +134,31 @@ class Client:
     def update(self, global_weights):
         self.model.set_weights(global_weights)
         
-        # Prepare for CPU usage sampling
+        #Prepare for CPU usage sampling
         cpu_stop_event = threading.Event()
         cpu_usage_list = []
         cpu_thread = threading.Thread(target=sample_cpu_usage, args=(cpu_stop_event, cpu_usage_list))
         
-        # Prepare for Memory usage sampling
+        #prepare for Memory usage sampling
         mem_stop_event = threading.Event()
         mem_usage_list = []
         mem_avail_list = []
         mem_thread = threading.Thread(target=sample_memory_usage, args=(mem_stop_event, mem_usage_list, mem_avail_list))
         
-        # Start sampling threads
+        #Start sampling threads
         cpu_thread.start()
         mem_thread.start()
         
-        # Begin local training (this call is blocking)
+        # Begin local training
         self.model.fit(self.X_train, self.y_train, self.X_val, self.y_val, epochs=5)
   
-        # Stop the sampling threads after training completes
+        #stop the sampling threads after training completes
         cpu_stop_event.set()
         mem_stop_event.set()
         cpu_thread.join()
         mem_thread.join()
         
-        # Compute CPU usage statistics
+        # Compute CPU usage stats
         if cpu_usage_list:
             avg_cpu = sum(cpu_usage_list) / len(cpu_usage_list)
             peak_cpu = max(cpu_usage_list)
@@ -197,7 +166,7 @@ class Client:
         else:
             avg_cpu = peak_cpu = min_cpu = 0.0
         
-        # Compute Memory usage statistics (in MB)
+        #Compute Memory usage stats(in MB)
         if mem_usage_list:
             avg_mem = sum(mem_usage_list) / len(mem_usage_list)
             peak_mem = max(mem_usage_list)
@@ -205,7 +174,7 @@ class Client:
         else:
             avg_mem = peak_mem = min_mem = 0.0
         
-        # Compute Available Memory statistics (in MB)
+        # Compute Available Memory stats (in MB)
         if mem_avail_list:
             avg_avail = sum(mem_avail_list) / len(mem_avail_list)
             peak_avail = max(mem_avail_list)
@@ -216,19 +185,18 @@ class Client:
         self.current_round += 1
 
         plain_weights = self.model.get_weights()
-        # Compute weight update norms: difference between new weights and global weights
-        avg_diffs, stds, shapes = self.model.compute_weight_update_norm_stats(global_weights, plain_weights)
-        log_weight_update_stats(self.current_round, avg_diffs, stds, shapes)
+        # Compute weight update norms: difference between new weights and global weights - commneted out as experiments done
+        #avg_diffs, stds, shapes = self.model.compute_weight_update_norm_stats(global_weights, plain_weights)
+        #log_weight_update_stats(self.current_round, avg_diffs, stds, shapes)
   
-        # Clip each weight update (difference between new weights and global weights), 
-        # based off emprical caclutions of weight update norm per round
+        # Clip each weight update based off emprical caclutions of weight update norm per round
         clipped_weights = []
         for i, (old_weight, new_weight) in enumerate(zip(global_weights, plain_weights)):
             clipped_weight = clip_weight_update(old_weight, new_weight, self.current_round)
             clipped_weights.append(clipped_weight)
 
             
-        # Include gradient stats in the round metrics dictionary
+        # statistics per round dor reports
         round_stats = {
             'avg_cpu': avg_cpu,
             'peak_cpu': peak_cpu,
@@ -241,6 +209,7 @@ class Client:
             'min_avail': min_avail,
         }
         self.round_metrics.append(round_stats)
+        
         
         print("Round Complete.")
         print(f"  CPU Usage - Avg: {avg_cpu:.2f}%, Peak: {peak_cpu:.2f}%, Min: {min_cpu:.2f}%")
@@ -257,7 +226,7 @@ class Client:
                 avg_avail, peak_avail, min_avail
             ])
 
-
+        #add dp noise if set to on
         if self.use_dp:
             noisy_weights = add_dp_noise(
                 clipped_weights,
@@ -272,7 +241,7 @@ class Client:
             noisy_weights = clipped_weights
 
         
-        # Encrypt the noisy weights before sending them to the server
+        #Encrypt the noisy weights before sending them to the server
         if self.use_he:
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore", category=UserWarning)
@@ -284,7 +253,7 @@ class Client:
 
     
    
-    
+    #final report at end of training
     def print_final_report(self):
         if not self.round_metrics:
             print("No round metrics to report.")
@@ -345,32 +314,26 @@ def send_data(sock, data):
 
 def receive_data(sock):
     try:
-        #print("[Client] Receiving header...")
         raw_msglen = recvall(sock, 4)
         if not raw_msglen:
-            #print("[Client] No header received. Connection may be closed.")
             return None
-        msglen = struct.unpack('!I', raw_msglen)[0]
-        #print("[Client] Header indicates payload length:", msglen)
         
+        msglen = struct.unpack('!I', raw_msglen)[0]
         data_pickle = recvall(sock, msglen)
         if not data_pickle:
-            #print("[Client] Payload not fully received.")
             return None
         return pickle.loads(data_pickle)
+    
     except Exception as e:
-        #print("[Client] Exception in receive_data:", e)
+        print("[Client] Exception in receive_data:", e)
         return None
 
-
+#Ensure full reception of n bytes from a socket.
 def recvall(sock, n):
-
     data = bytearray()
     while len(data) < n:
         try:
-            #print("[Client] Currently received:", len(data), "of", n, "expected")
             packet = sock.recv(n - len(data))
-            #print("[Client] Packet received with length:", len(packet))
             if not packet:
                 print("[Client] Connection closed by server.")
                 return None
@@ -395,7 +358,7 @@ def str2bool(v):
         raise argparse.ArgumentTypeError("Boolean value expected.")
 
 
-# Client Setup
+# Client Setup, parse args
 parser = argparse.ArgumentParser()
 parser.add_argument('--experiment_name', type=str, default=None,
                     help="Optional name of the experiment (used to group logs)")
@@ -412,7 +375,7 @@ parser.add_argument('--dp_noise_type', type=str, default='gaussian', choices=['l
                     help="Type of noise to use for DP")
 args = parser.parse_args()
 
-# Create unique evaluation folder with subfolder for each client
+#create unique evaluation folder with subfolder for each client
 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 if args.experiment_name:
     base_log_dir = os.path.join("evaluation_logs", args.experiment_name)
@@ -435,7 +398,7 @@ with open(client_log_path, mode='w', newline='') as f:
     ])
 
 
-
+#load in training data
 client_data, _ = load_raw_covid_data_for_federated(num_clients=args.num_clients)
 client_files = client_data[args.client_id]
 X_all, y_all = load_images_from_paths(client_files)
@@ -458,6 +421,8 @@ print(f"  Training samples: {len(y_train)}")
 print(f"    ↳ COVID: {int(np.sum(y_train))}, Non-COVID: {len(y_train) - int(np.sum(y_train))}")
 print(f"  Validation samples: {len(y_val)}")
 print(f"    ↳ COVID: {int(np.sum(y_val))}, Non-COVID: {len(y_val) - int(np.sum(y_val))}")
+
+#create client instance
 client = Client(X_train, y_train, X_val, y_val,
                 dp_epsilon=args.dp_epsilon,
                 num_clients=args.num_clients,
@@ -465,7 +430,7 @@ client = Client(X_train, y_train, X_val, y_val,
                 use_dp=args.use_dp,
                 use_he=args.use_he)
 
-# === Metadata Logging (Only for Client 0) ===
+# Metadata Logging (Only for Client 0)
 if args.client_id == 0:
     meta_path = os.path.join(log_dir, "client_metadata.txt")
     with open(meta_path, 'w') as f:

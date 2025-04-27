@@ -9,8 +9,8 @@ from sklearn.model_selection import train_test_split
 from matplotlib import image as img
 from skimage.transform import resize
 from sklearn.metrics import confusion_matrix, classification_report, accuracy_score, f1_score
-from CNN import *
-from utils import *
+from b_CNN import *
+from b_utils import *
 import csv
 import os
 from datetime import datetime
@@ -23,7 +23,7 @@ import os
 import csv
 
 
-# --- Parse CLI arguments ---
+#Parse command line args
 parser = argparse.ArgumentParser(description="Federated Server")
 parser.add_argument('--num_clients', type=int, default=2, help='Number of federated clients')
 parser.add_argument('--use_he', type=str2bool, default=True, help='Toggle homomorphic encryption (default: True)')
@@ -36,17 +36,19 @@ parser.add_argument('--global_scale_exp', type=int, default=40,
 
 args = parser.parse_args()
 
-# Convert comma-separated string to list of ints
+# set CKKS params
+#Convert comma-separated string to list of ints for coeff mod 
 coeff_mod_bit_sizes = list(map(int, args.coeff_mod_bit_sizes.split(',')))
 poly_modulus_degree = args.poly_modulus_degree
 global_scale = 2 ** args.global_scale_exp
 
+#set clients and whether or not to use HE
+NUM_CLIENTS = args.num_clients
+USE_HE = args.use_he
 
 
-
-# Create a new evaluation log folder with a timestamp
+#Create a new evaluation log folder with a timestamp
 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-
 if args.experiment_name:
     base_log_dir = os.path.join("evaluation_logs", args.experiment_name)
     log_dir = os.path.join(base_log_dir, f"log_server_{timestamp}")
@@ -65,11 +67,7 @@ with open(server_log_path, mode='w', newline='') as f:
     ])
     
     
-NUM_CLIENTS = args.num_clients
-USE_HE = args.use_he
-
-NUM_CLIENTS = args.num_clients
-
+#Save server evaluation results to CSV
 def log_server_round(round_num, acc, f1, duration, conf_matrix, report_dict):
     with open(server_log_path, mode='a', newline='') as f:
         writer = csv.writer(f)
@@ -85,7 +83,7 @@ def log_server_round(round_num, acc, f1, duration, conf_matrix, report_dict):
         ])
 
 
-# Function to handle communication with each client during one round
+# handle communication with each client during one round
 def handle_client_communication(client_conn, global_weights, updates_list, updates_lock, comm_stats, index):
     sent_size = send_data(client_conn, global_weights)
     comm_stats['total_sent'] += sent_size
@@ -95,53 +93,29 @@ def handle_client_communication(client_conn, global_weights, updates_list, updat
         with updates_lock:
             updates_list.append(client_encrypted_update)
         comm_stats['total_received'] += received_size
-# --- Resource Sampling Functions for the Server ---
 
-
-
-def sample_memory_usage(stop_event, mem_usage_list, mem_avail_list):
-    """
-    Polls the process's memory usage and the system's available memory every second,
-    appending the values (in MB) to mem_usage_list and mem_avail_list respectively,
-    until stop_event is set.
-    """
-    process = psutil.Process(os.getpid())
-    while not stop_event.is_set():
-        mem_usage = process.memory_info().rss / (1024 * 1024)
-        mem_avail = psutil.virtual_memory().available / (1024 * 1024)
-        mem_usage_list.append(mem_usage)
-        mem_avail_list.append(mem_avail)
-        time.sleep(1)
-
-# --- Modified Helper Functions for Socket Communication with Size Tracking ---
-
+# modified Helper Functions for Socket Communication with Size Tracking 
 def send_data(sock, data):
     try:
         data_pickle = pickle.dumps(data)
         data_length = len(data_pickle)
-        #print("[Server] Sending weights of length:", data_length)
         header = struct.pack('!I', data_length)
         sock.sendall(header)
         sock.sendall(data_pickle)
         return 4 + data_length  # 4 bytes header + data size
     except Exception as e:
-        #print("[Server] Exception in send_data:", e)
         raise e
 
 
 def receive_data(sock):
     try:
-        #print("[Server] Receiving header...")
         raw_msglen = recvall(sock, 4)
         if not raw_msglen:
-            #print("[Server] No header received from client.")
             return None, 0
         msglen = struct.unpack('!I', raw_msglen)[0]
-        #print("[Server] Header indicates payload length:", msglen)
         
         data_pickle = recvall(sock, msglen)
         if not data_pickle:
-            #print("[Server] Payload not fully received from client.")
             return None, 0
         return pickle.loads(data_pickle), 4 + msglen
     except Exception as e:
@@ -158,7 +132,7 @@ def recvall(sock, n):
         data.extend(packet)
     return data
 
-# --- Initialize TenSEAL Context on the Server ---
+#Initialize TenSEAL Context on the Server 
 if USE_HE:
     ts_context = ts.context(
         ts.SCHEME_TYPE.CKKS,
@@ -175,7 +149,7 @@ else:
 
 
 
-# --- Server Setup ---
+# Server Setup 
 HOST = '127.0.0.1'
 PORT = 65432
 client_data, (test_files, test_labels) = load_raw_covid_data_for_federated(num_clients=NUM_CLIENTS)
@@ -189,7 +163,6 @@ global_model.set_initial_params()
 
 # Federated training settings
 rounds = 25
-# <-- Define your F1 threshold here. Change this value to the desired threshold.
 F1_THRESHOLD = 0.9
 
 round_times = []
@@ -206,6 +179,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     s.listen(NUM_CLIENTS)
     print("Waiting for clients to connect...")
 
+    #Accept client connections
     clients = []
     for _ in range(NUM_CLIENTS):
         conn, addr = s.accept()
@@ -214,7 +188,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         if USE_HE:
             send_data(conn, serialized_context)
 
-
+    #train for a number of rounds or until F1 threshold reached
     for round_num in range(1, rounds + 1):
         start_time = time.time()
         print(f"\n--- Round {round_num}/{rounds} ---")
@@ -238,12 +212,12 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 
         global_weights = global_model.get_weights()
 
+        #set up thread for each client
         threads = []
         for idx, client_conn in enumerate(clients):
             t = threading.Thread(target=handle_client_communication, args=(client_conn, global_weights, updates, updates_lock, comm_stats, idx))
             t.start()
             threads.append(t)
-
         for t in threads:
             t.join()
 
@@ -253,12 +227,11 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 
 
 
-        #Homomorphic Aggregation 
-        # Aggregation logic
+        #Aggregation logic
         if updates:
             aggregated_weights = []
             num_clients = len(updates)
-
+            #If use HE is set then use homomorphic aggregation carried out 
             if USE_HE:
                 for idx in range(len(updates[0])):  # For each layer
                     agg = ts.ckks_vector_from(ts_context, updates[0][idx])
@@ -271,7 +244,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                     decrypted_flat = np.array(decrypted_flat[:np.prod(original_shape)])
                     aggregated_weights.append(decrypted_flat.reshape(original_shape))
             else:
-                # Simple average over all client updates (already in NumPy)
+                # Simple average over all client updates if no HE)
                 aggregated_weights = [np.mean(layer_weights, axis=0) for layer_weights in zip(*updates)]
 
             global_model.set_weights(aggregated_weights)
@@ -284,10 +257,10 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         acc = accuracy_score(y_test, y_pred)
         conf_matrix = confusion_matrix(y_test, y_pred)
         class_report = classification_report(y_test, y_pred, digits=4)
-        f1 = f1_score(y_test, y_pred, average='weighted')  # <-- Compute F1 score
+        f1 = f1_score(y_test, y_pred, average='weighted')  
         
         print(f"Round {round_num} - Accuracy: {acc*100:.2f}%")
-        print(f"F1 Score: {f1:.4f}")  # <-- Display F1 score
+        print(f"F1 Score: {f1:.4f}")  
         print("Confusion Matrix:")
         print(conf_matrix)
         print("Classification Report:")
@@ -342,17 +315,18 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         
         # Parse classification report to dictionary
         report_dict = classification_report(y_test, y_pred, output_dict=True)
+        
         # Log to CSV
         log_server_round(round_num, acc, f1, round_duration, conf_matrix, report_dict)
-                # *** Early Stopping Check Based on F1 Score ***
+        
+        # Early Stopping Check Based on F1 Score 
         if f1 >= F1_THRESHOLD:
             print(f"\n*** F1 threshold reached: {f1:.4f} >= {F1_THRESHOLD}. Stopping training early. ***")
-            # Optionally, you could notify the clients here if needed.
-            break  # Exit the training rounds loop
+            break  
         
         print(f"Round {round_num} duration: {round_duration:.2f} seconds")
 
-    # Final Reporting (this section will run regardless of early stopping)
+    # Final Reporting 
     total_time = sum(round_times)
     average_time_per_round = total_time / len(round_times) if round_times else 0
     average_time_per_round_per_client = average_time_per_round / NUM_CLIENTS
@@ -426,7 +400,6 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         conn.close()
         
     # Save experiment metadata
-# Save experiment metadata
     metadata_path = os.path.join(log_dir, "experiment_metadata.txt")
     with open(metadata_path, 'w') as meta_file:
         meta_file.write(f"Experiment Timestamp: {timestamp}\n")

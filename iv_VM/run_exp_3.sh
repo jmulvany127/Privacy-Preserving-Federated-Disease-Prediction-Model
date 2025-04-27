@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # === Experiment Settings ===
-EXPERIMENT_NAME="exp_ckks_perf_light_vs_heavy"
+EXPERIMENT_NAME="exp_dp_epsilon_sweep"
 NUM_CLIENTS=2
-REPEATS=1
+REPEATS=8
 SLEEP_BETWEEN_RUNS=60
 PORT=65432
 
@@ -18,32 +18,30 @@ wait_for_port() {
   done
 }
 
-# === Configurations ===
-POLY_DEGREES=(16384)
-COEFF_BITS=("60,40,40,60")
-SCALES=(40)
+# DP Epsilon Values 
+EPSILONS=(0.1 1 5 10)
 
-# === Run Experiments ===
-for i in "${!POLY_DEGREES[@]}"; do
-  DEGREE="${POLY_DEGREES[$i]}"
-  BITS="${COEFF_BITS[$i]}"
-  SCALE="${SCALES[$i]}"
+#  CKKS Default Parameters 
+POLY_DEGREE=8192
+COEFF_BITS="60,40,40,60"
+SCALE=40
 
+# Run Experiments 
+for EPS in "${EPSILONS[@]}"; do
   for run_id in $(seq 1 $REPEATS); do
-    #RUN_NAME="${EXPERIMENT_NAME}_deg${DEGREE}_run${run_id}"
-    RUN_NAME="exp_${DEGREE}_r${run_id}"
+    RUN_NAME="exp_dp_eps${EPS}_r${run_id}"
     echo ""
-    echo "=== Running Config: Degree=$DEGREE | Bits=$BITS | Scale=$SCALE | Run $run_id ==="
+    echo "=== Running Config: Epsilon=$EPS | Run $run_id ==="
 
-    pkill -f server_LDP.py
+    pkill -f a_server_LDP.py
     wait_for_port
 
-    nohup python3 -u server_LDP.py \
+    nohup python3 -u a_server_LDP.py \
       --num_clients $NUM_CLIENTS \
       --experiment_name "$RUN_NAME" \
       --use_he True \
-      --poly_modulus_degree $DEGREE \
-      --coeff_mod_bit_sizes "$BITS" \
+      --poly_modulus_degree $POLY_DEGREE \
+      --coeff_mod_bit_sizes "$COEFF_BITS" \
       --global_scale_exp $SCALE \
       > "$LOG_DIR/server_${RUN_NAME}.log" 2>&1 &
 
@@ -52,19 +50,22 @@ for i in "${!POLY_DEGREES[@]}"; do
 
     for ((j=0; j<$NUM_CLIENTS; j++)); do
       echo "Starting client $j..."
-      nohup python3 client_LDP.py \
+      nohup python3 a_client_LDP.py \
         --client_id $j \
         --num_clients $NUM_CLIENTS \
         --experiment_name "$RUN_NAME" \
+        --use_dp True \
+        --dp_epsilon $EPS \
+        --dp_noise_type gaussian \
         --use_he True \
         > "$LOG_DIR/client_${RUN_NAME}_$j.log" 2>&1 &
     done
 
     wait $SERVER_PID
-    echo "Finished Config: Degree=$DEGREE | Run $run_id"
+    echo "Finished Config: Epsilon=$EPS | Run $run_id"
     sleep $SLEEP_BETWEEN_RUNS
   done
 done
 
 echo ""
-echo "=== Lightweight vs Heavyweight CKKS experiments completed ==="
+echo "DP Epsilon  Experiment Completed "
