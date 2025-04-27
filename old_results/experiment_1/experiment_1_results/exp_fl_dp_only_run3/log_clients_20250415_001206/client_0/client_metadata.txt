@@ -1,7 +1,0 @@
-=== Client Experiment Metadata ===
-Client ID: 0
-Total Clients: 2
-Homomorphic Encryption (HE): False
-Differential Privacy (DP): True
-  - epsilon: 3.0
-  - noise_type: gaussian

@@ -1,7 +1,0 @@
-Experiment Timestamp: 20250415_132145
-Use Homomorphic Encryption: True
-Number of Clients: 2
-CKKS Parameters:
-  Poly Modulus Degree: 8192
-  Coeff Mod Bit Sizes: [40, 30, 30, 40]
-  Global Scale: 2^40

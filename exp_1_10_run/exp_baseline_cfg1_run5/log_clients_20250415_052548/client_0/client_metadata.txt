@@ -1,5 +1,0 @@
-=== Client Experiment Metadata ===
-Client ID: 0
-Total Clients: 2
-Homomorphic Encryption (HE): True
-Differential Privacy (DP): False
